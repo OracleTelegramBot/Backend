@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TimeTrackingDTO {
-    private String developerName;
-    private Double totalHoursLogged;
-    private Integer tasksInvolved;
+public class UserWorkloadDTO {
+    private String nombreUsuario;
+    private Long tareasPendientes;
+    private Long tareasCompletadas;
+    private Double porcentajeCarga;
 }

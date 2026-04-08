@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AverageHoursDTO {
-    private String sprintName;
-    private Integer totalTaskCompleted;
-    private Double averageHoursPerTask;
+public class EfficiencyResponseDTO {
+    private Double efficiencyPercentage;
+    private String statusMessage;
 }
