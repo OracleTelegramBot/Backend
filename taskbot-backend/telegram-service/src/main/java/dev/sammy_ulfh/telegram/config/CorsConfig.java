@@ -1,4 +1,4 @@
-package dev.sammy_ulfh.kpi.config;
+package dev.sammy_ulfh.telegram.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ public class CorsConfig {
                         .allowedOrigins("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
-                        // .allowCredentials(true);
+                        //.allowCredentials(true);
             }
         };
     }
