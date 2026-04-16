@@ -24,9 +24,6 @@ public class TareaEntity {
     @Column(name = "TIEMPO_REAL")
     private Integer tiempoReal;
 
-    @Column(name = "ID_USUARIO")
-    private Long idUsuario;
-
     @Column(name = "FECHA_LIMITE")
     @Temporal(TemporalType.DATE)
     private java.util.Date fechaLimite;
