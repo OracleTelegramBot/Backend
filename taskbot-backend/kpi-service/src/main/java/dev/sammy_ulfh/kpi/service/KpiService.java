@@ -15,4 +15,10 @@ public interface KpiService {
     EfficiencyResponseDTO calcularPrecisionEstimacionUsuario(Long idUsuario);
 
     List<KpiEntity> obtenerHistorialKpisProyecto(Long idProyecto);
+
+    List<ActiveResourceDTO> listarProyectosActivos();
+
+    List<ActiveResourceDTO> listarSprintsActivos();
+
+    List<ActiveResourceDTO> listarUsuariosActivos();
 }

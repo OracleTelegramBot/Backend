@@ -9,7 +9,10 @@ import dev.sammy_ulfh.kpi.model.dto.*;
 import dev.sammy_ulfh.kpi.model.entity.KpiEntity;
 import dev.sammy_ulfh.kpi.model.entity.TareaEntity;
 import dev.sammy_ulfh.kpi.repository.KpiRepository;
+import dev.sammy_ulfh.kpi.repository.ProyectoRepository;
+import dev.sammy_ulfh.kpi.repository.SprintRepository;
 import dev.sammy_ulfh.kpi.repository.TareaRepository;
+import dev.sammy_ulfh.kpi.repository.UsuarioRepository;
 import dev.sammy_ulfh.kpi.service.KpiService;
 import java.util.Date;
 import org.springframework.stereotype.Service;
@@ -22,13 +25,21 @@ public class KpiServiceImpl implements KpiService {
 
     private final TareaRepository tareaRepository;
     private final KpiRepository kpiRepository;
+    private final ProyectoRepository proyectoRepository;
+    private final SprintRepository sprintRepository;
+    private final UsuarioRepository usuarioRepository;
 
     // Constante para facilitar futuros cambios
     private static final Long ESTADO_COMPLETADO = 5L;
 
-    public KpiServiceImpl(TareaRepository tareaRepository, KpiRepository kpiRepository) {
+    public KpiServiceImpl(TareaRepository tareaRepository, KpiRepository kpiRepository,
+            ProyectoRepository proyectoRepository, SprintRepository sprintRepository,
+            UsuarioRepository usuarioRepository) {
         this.tareaRepository = tareaRepository;
         this.kpiRepository = kpiRepository;
+        this.proyectoRepository = proyectoRepository;
+        this.sprintRepository = sprintRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // Calculo de eficiencia
@@ -59,11 +70,11 @@ public class KpiServiceImpl implements KpiService {
 
         String mensaje;
         if (porcentajeDuracion <= 90) {
-            mensaje = "[+] Excelente resultado: El sprint fue finalizado con un 10% de ahorro o mas.";
+            mensaje = "[+] Excelente resultado: El sprint fue finalizado con un 10% de ahorro o más.";
         } else if (porcentajeDuracion <= 100) {
             mensaje = "[+] Buen resultado: El sprint fue finalizado dentro de lo planeado.";
         } else {
-            mensaje = "[!] Estado de alerta: El tiempo real excedio el considerado en la planificacion.";
+            mensaje = "[!] Estado de alerta: El tiempo real excedió el considerado en la planificación.";
         }
 
         return new EfficiencyResponseDTO(porcentajeDuracion, mensaje);
@@ -91,7 +102,7 @@ public class KpiServiceImpl implements KpiService {
 
         String mensaje;
         if (porcentajeCumplimiento >= 85.0) {
-            mensaje = "[+] Excelente resultado: Se completaron el 85% o mas de las tareas planificadas.";
+            mensaje = "[+] Excelente resultado: Se completó el 85% o más de las tareas planificadas.";
         } else {
             mensaje = "[!] Estado de alerta: Se completaron menos del 85% de las tareas planificadas.";
         }
@@ -156,7 +167,7 @@ public class KpiServiceImpl implements KpiService {
 
         if (tareasEvaluables.isEmpty()) {
             throw new ResourceNotFoundException("El usuario con ID " + idUsuario
-                    + " no tiene tareas con tiempo real registrado para evaluar su precision.");
+                    + " no tiene tareas con tiempo real registrado para evaluar su precisión.");
         }
 
         double totalEstimado = tareasEvaluables.stream()
@@ -164,7 +175,7 @@ public class KpiServiceImpl implements KpiService {
                 .sum();
 
         double totalReal = tareasEvaluables.stream()
-                .mapToDouble(t -> t.getTiempoReal())
+                .mapToDouble(t -> t.getTiempoReal() != null ? t.getTiempoReal() : 0.0)
                 .sum();
 
         double precision = (totalEstimado / totalReal) * 100.0;
@@ -174,11 +185,11 @@ public class KpiServiceImpl implements KpiService {
         String mensaje;
 
         if (precision >= 85.0 && precision <= 100.0) {
-            mensaje = "[+] Excelente resultado: La estimacion de tiempos es altamente precisa.";
+            mensaje = "[+] Excelente resultado: La estimación de tiempos es altamente precisa.";
         } else if (precision >= 100.0) {
-            mensaje = "[-] Desviacion: El usuario sobreestima el tiempo de sus tareas (siempre temrina antes).";
+            mensaje = "[-] Desviación: El usuario sobreestima el tiempo de sus tareas (siempre termina antes).";
         } else {
-            mensaje = "[!] Alerta: El usuario subestima el tiempo de sus tareas (le lleva mas tiempo del planeado).";
+            mensaje = "[!] Alerta: El usuario subestima el tiempo de sus tareas (le lleva más tiempo del planeado).";
         }
 
         return new EfficiencyResponseDTO(
@@ -189,9 +200,29 @@ public class KpiServiceImpl implements KpiService {
 
     @Override
     public List<KpiEntity> obtenerHistorialKpisProyecto(Long idProyecto) {
-        // Se usa el repositorio para traer los datos ordenados cronológicamente
-        // para que la gráfica en la web se dibuje correctamente de izquierda a derecha
-        return kpiRepository.findByIdProyecto(idProyecto);
+        return kpiRepository.findByIdProyectoOrderByFechaCalculoAsc(idProyecto);
+    }
+
+    @Override
+    public List<ActiveResourceDTO> listarProyectosActivos() {
+        return proyectoRepository.findAll().stream()
+                .map(p -> new ActiveResourceDTO(p.getIdProyecto(), p.getNombre()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ActiveResourceDTO> listarSprintsActivos() {
+        return sprintRepository.findAll().stream()
+                .map(s -> new ActiveResourceDTO(s.getIdSprint(), s.getNombre()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ActiveResourceDTO> listarUsuariosActivos() {
+        return usuarioRepository.findAll().stream()
+                // Concatenamos nombre y apellido para que se vea bien en el botón
+                .map(u -> new ActiveResourceDTO(u.getIdUsuario(), u.getNombre() + " " + u.getApellido()))
+                .collect(Collectors.toList());
     }
 
     private void guardarRegistroKpi(String tipo, Double valor, Long idProyecto, Long idUsuario) {

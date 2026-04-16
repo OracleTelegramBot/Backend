@@ -55,4 +55,19 @@ public class KpiController {
     public ResponseEntity<List<KpiEntity>> getKpiHistory(@PathVariable Long idProyecto) {
         return ResponseEntity.ok(kpiService.obtenerHistorialKpisProyecto(idProyecto));
     }
+
+    @GetMapping("/proyectos/activos")
+    public ResponseEntity<List<ActiveResourceDTO>> getProyectosActivos() {
+        return ResponseEntity.ok(kpiService.listarProyectosActivos());
+    }
+
+    @GetMapping("/sprints/activos")
+    public ResponseEntity<List<ActiveResourceDTO>> getSprintsActivos() {
+        return ResponseEntity.ok(kpiService.listarSprintsActivos());
+    }
+
+    @GetMapping("/usuarios/activos")
+    public ResponseEntity<List<ActiveResourceDTO>> getUsuariosActivos() {
+        return ResponseEntity.ok(kpiService.listarUsuariosActivos());
+    }
 }

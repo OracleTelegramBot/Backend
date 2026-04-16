@@ -9,7 +9,7 @@ import lombok.Data;
 @Entity
 @Table(name = "SPRINT")
 @Data
-public class SpringEntity {
+public class SprintEntity {
     @Id
     @Column(name = "ID_SPRINT")
     private Long idSprint;

@@ -10,7 +10,7 @@ import java.util.List;
 public interface KpiRepository extends JpaRepository<KpiEntity, Long> {
 
     // Metodos de consulta para KPI
-    List<KpiEntity> findByIdProyecto(Long idProyecto);
+    List<KpiEntity> findByIdProyectoOrderByFechaCalculoAsc(Long idProyecto);
 
     List<KpiEntity> findByIdUsuario(Long idUsuario);
 }
