@@ -1,8 +1,12 @@
 package dev.sammy_ulfh.kpi.controller;
 
 import dev.sammy_ulfh.kpi.model.dto.*;
+import dev.sammy_ulfh.kpi.model.entity.KpiEntity;
 import dev.sammy_ulfh.kpi.service.KpiService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,35 +16,43 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/kpis")
-@Tag(name = "KPI's del proyecto", description = "Endpoints para el calculo de KPI's para recuperar informacion de productividad.")
+@Tag(name = "KPI's del proyecto", description = "Endpoints para el cálculo de KPI's ágiles (Scrum) y recuperación de histórico.")
 public class KpiController {
 
     private final KpiService kpiService;
 
     @Autowired
-    public KpiController(KpiService kpiService){
+    public KpiController(KpiService kpiService) {
         this.kpiService = kpiService;
     }
 
-    // Productividad del equipo (20% estimado o requerido)
-    @GetMapping("/proyecto/{idProyecto}/productivity")
-    public ResponseEntity<ProductivityResponseDTO> getProductivity(@PathVariable Long idProyecto){
-        return ResponseEntity.ok(kpiService.calcularProductividadProyecto(idProyecto));
+    // Duración del sprint (KPI 2)
+    @GetMapping("/sprint/{idSprint}/duracion")
+    public ResponseEntity<EfficiencyResponseDTO> getDuracionSprint(@PathVariable Long idSprint) {
+        return ResponseEntity.ok(kpiService.calcularDuracionSprint(idSprint));
     }
 
-    @GetMapping("/proyecto/{id}/efficiency")
-    public ResponseEntity<EfficiencyResponseDTO> getEfficnecy(@PathVariable Long id){
-        return ResponseEntity.ok(kpiService.calcularEficienciaProyecto(id));
+    // Cumplimiento de sprint (KPI 6)
+    @GetMapping("/sprint/{idSprint}/cumplimiento")
+    public ResponseEntity<ProductivityResponseDTO> getCumplimientoSprint(@PathVariable Long idSprint) {
+        return ResponseEntity.ok(kpiService.calcularCumplimientoSprint(idSprint));
     }
 
-    @GetMapping("/usuario/{id}/workload")
-    public ResponseEntity<UserWorkloadDTO> getWorkload(@PathVariable Long id){
-        return ResponseEntity.ok(kpiService.obtenerCargaTrabajoUsuario(id));
+    // Tiempo de ciclo por tarea (KPI 7)
+    @GetMapping("/proyecto/{idProyecto}/tiempo-ciclo")
+    public ResponseEntity<ProductivityResponseDTO> getTiempoCicloProyecto(@PathVariable Long idProyecto) {
+        return ResponseEntity.ok(kpiService.calcularTiempoCicloProyecto(idProyecto));
     }
 
-    @GetMapping("/proyecto/{id}/deadline-compliance")
-    public ResponseEntity<DeadlineComplianceDTO> getDeadlineCompliance(@PathVariable Long id){
-        return ResponseEntity.ok(kpiService.calcularCumplimientoPlazos(id));
+    // Precisión de estimación de carga (KPI 12)
+    @GetMapping("/usuario/{idUsuario}/precision-estimacion")
+    public ResponseEntity<EfficiencyResponseDTO> getPrecisionEstimacionUsuario(@PathVariable Long idUsuario) {
+        return ResponseEntity.ok(kpiService.calcularPrecisionEstimacionUsuario(idUsuario));
     }
 
+    // Histórico de KPIs para gráficas en Dashboard
+    @GetMapping("/proyecto/{idProyecto}/history")
+    public ResponseEntity<List<KpiEntity>> getKpiHistory(@PathVariable Long idProyecto) {
+        return ResponseEntity.ok(kpiService.obtenerHistorialKpisProyecto(idProyecto));
+    }
 }

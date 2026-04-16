@@ -22,4 +22,6 @@ public interface TareaRepository extends JpaRepository<TareaEntity, Long> {
 
         @Query(value = "SELECT t.* FROM Tarea t INNER JOIN Usuario_Tarea ut ON t.id_tarea = ut.id_tarea WHERE ut.id_usuario = :idUsuario", nativeQuery = true)
         List<TareaEntity> findByIdUsuario(@Param("idUsuario") Long idUsuario);
+
+        List<TareaEntity> findByIdSprint(Long idSprint);
 }
