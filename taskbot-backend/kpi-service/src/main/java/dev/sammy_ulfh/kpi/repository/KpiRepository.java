@@ -8,8 +8,9 @@ import java.util.List;
 
 @Repository
 public interface KpiRepository extends JpaRepository<KpiEntity, Long> {
-    
-    // Métodos para consultar KPIs históricos
+
+    // Metodos de consulta para KPI
     List<KpiEntity> findByIdProyecto(Long idProyecto);
+
     List<KpiEntity> findByIdUsuario(Long idUsuario);
 }
