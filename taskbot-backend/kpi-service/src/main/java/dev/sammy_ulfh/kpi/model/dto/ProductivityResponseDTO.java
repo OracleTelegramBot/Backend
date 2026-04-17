@@ -11,4 +11,6 @@ public class ProductivityResponseDTO {
     private Double productivityPercentage;
     private String statusMessage;
     private String calculationDetails;
+    private Double actualValue;
+    private Double expectedValue;
 }
