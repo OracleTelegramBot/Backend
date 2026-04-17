@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class ProductivityResponseDTO {
     private Double productivityPercentage;
     private String statusMessage;
+    private String calculationDetails;
 }

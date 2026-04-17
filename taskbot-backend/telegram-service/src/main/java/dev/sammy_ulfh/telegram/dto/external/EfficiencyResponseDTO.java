@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class EfficiencyResponseDTO {
     private Double efficiencyPercentage;
     private String statusMessage;
+    private String calculationDetails;
 }

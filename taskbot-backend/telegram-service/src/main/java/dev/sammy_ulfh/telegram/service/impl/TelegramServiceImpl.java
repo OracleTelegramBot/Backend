@@ -92,22 +92,22 @@ public class TelegramServiceImpl implements TelegramService {
                 case "/sprint_duracion":
                     EfficiencyResponseDTO duracion = kpiClient.getDuracionSprint(id);
                     response = formatearRespuesta("Duración del Sprint", duracion.getEfficiencyPercentage(),
-                            duracion.getStatusMessage());
+                            duracion.getCalculationDetails(), duracion.getStatusMessage());
                     break;
                 case "/sprint_cumplimiento":
                     ProductivityResponseDTO cumplimiento = kpiClient.getCumplimientoSprint(id);
                     response = formatearRespuesta("Cumplimiento del Sprint", cumplimiento.getProductivityPercentage(),
-                            cumplimiento.getStatusMessage());
+                            cumplimiento.getCalculationDetails(), cumplimiento.getStatusMessage());
                     break;
                 case "/ciclo_proyecto":
                     ProductivityResponseDTO ciclo = kpiClient.getTiempoCicloProyecto(id);
                     response = formatearRespuesta("Tiempo de Ciclo por Tarea", ciclo.getProductivityPercentage(),
-                            ciclo.getStatusMessage());
+                            ciclo.getCalculationDetails(), ciclo.getStatusMessage());
                     break;
                 case "/precision_usuario":
                     EfficiencyResponseDTO precision = kpiClient.getPrecisionEstimacionUsuario(id);
                     response = formatearRespuesta("Precisión de Estimación", precision.getEfficiencyPercentage(),
-                            precision.getStatusMessage());
+                            precision.getCalculationDetails(), precision.getStatusMessage());
                     break;
                 default:
                     response = "[-] Comando desconocido.";
@@ -118,9 +118,9 @@ public class TelegramServiceImpl implements TelegramService {
         sendToTelegram(chatId, response, null);
     }
 
-    private String formatearRespuesta(String metrica, Double porcentaje, String statusMessage) {
-        return String.format("[+] *Métrica:* %s\n[+] *Resultado:* `%.2f%%`\n[+] *Estado:* %s",
-                metrica, porcentaje, statusMessage);
+    private String formatearRespuesta(String metrica, Double porcentaje, String calculationDetails, String statusMessage) {
+        return String.format("[+] *Métrica:* %s\n[+] *Resultado:* `%.2f%%`\n[+] *Detalles:* %s\n[+] *Estado:* %s",
+                metrica, porcentaje, calculationDetails != null ? calculationDetails : "N/A", statusMessage);
     }
 
     private void enviarMenu(Long chatId, String command) {
