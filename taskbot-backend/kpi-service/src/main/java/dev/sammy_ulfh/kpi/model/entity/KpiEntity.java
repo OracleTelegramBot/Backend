@@ -29,4 +29,7 @@ public class KpiEntity {
 
     @Column(name = "ID_USUARIO")
     private Long idUsuario;
+
+    @Column(name = "ID_SPRINT")
+    private Long idSprint;
 }

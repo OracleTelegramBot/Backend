@@ -24,4 +24,12 @@ public interface TareaRepository extends JpaRepository<TareaEntity, Long> {
         List<TareaEntity> findByIdUsuario(@Param("idUsuario") Long idUsuario);
 
         List<TareaEntity> findByIdSprint(Long idSprint);
+
+        @Query(value = "SELECT t.* FROM TAREA t INNER JOIN USUARIO_TAREA ut ON t.ID_TAREA = ut.ID_TAREA WHERE ut.ID_USUARIO = :idUsuario AND t.ID_SPRINT = :idSprint", nativeQuery = true)
+        List<TareaEntity> findTareasByUsuarioAndSprint(@Param("idUsuario") Long idUsuario,
+                        @Param("idSprint") Long idSprint);
+
+        @Query(value = "SELECT t.* FROM TAREA t INNER JOIN USUARIO_TAREA ut ON t.ID_TAREA = ut.ID_TAREA WHERE ut.ID_USUARIO = :idUsuario AND t.ID_PROYECTO = :idProyecto", nativeQuery = true)
+        List<TareaEntity> findTareasByUsuarioAndProyecto(@Param("idUsuario") Long idUsuario,
+                        @Param("idProyecto") Long idProyecto);
 }

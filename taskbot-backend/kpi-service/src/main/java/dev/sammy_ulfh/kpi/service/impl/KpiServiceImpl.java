@@ -66,7 +66,7 @@ public class KpiServiceImpl implements KpiService {
         double porcentajeDuracion = (tiempoReal / tiempoPlanificado) * 100;
 
         Long idProyecto = tareas.get(0).getIdProyecto();
-        guardarRegistroKpi("DURACION_SPRINT", porcentajeDuracion, idProyecto, null);
+        guardarRegistroKpi("DURACION_SPRINT", porcentajeDuracion, idProyecto, null, idSprint);
 
         String mensaje;
         if (porcentajeDuracion <= 90) {
@@ -98,7 +98,7 @@ public class KpiServiceImpl implements KpiService {
         double porcentajeCumplimiento = (tareasCompletadas / totalTareasPlanificadas) * 100;
 
         Long idProyecto = tareas.get(0).getIdProyecto();
-        guardarRegistroKpi("CUMPLIMIENTO_SPRINT", porcentajeCumplimiento, idProyecto, null);
+        guardarRegistroKpi("CUMPLIMIENTO_SPRINT", porcentajeCumplimiento, idProyecto, null, idSprint);
 
         String mensaje;
         if (porcentajeCumplimiento >= 85.0) {
@@ -138,7 +138,7 @@ public class KpiServiceImpl implements KpiService {
                 .average()
                 .orElse(0.0);
 
-        guardarRegistroKpi("TIEMPO_CICLO", promedioCicloReal, idProyecto, null);
+        guardarRegistroKpi("TIEMPO_CICLO", promedioCicloReal, idProyecto, null, null);
 
         String mensaje;
         double limiteAceptable = promedioEstimado * 1.10;
@@ -180,7 +180,7 @@ public class KpiServiceImpl implements KpiService {
 
         double precision = (totalEstimado / totalReal) * 100.0;
 
-        guardarRegistroKpi("PRECISION_ESTIMACION", precision, null, idUsuario);
+        guardarRegistroKpi("PRECISION_ESTIMACION", precision, null, idUsuario, null);
 
         String mensaje;
 
@@ -225,13 +225,88 @@ public class KpiServiceImpl implements KpiService {
                 .collect(Collectors.toList());
     }
 
-    private void guardarRegistroKpi(String tipo, Double valor, Long idProyecto, Long idUsuario) {
+    @Override
+    public ProductivityResponseDTO calcularCumplimientoSprintPersonal(Long idUsuario, Long idSprint) {
+        List<TareaEntity> tareasUsuario = tareaRepository.findTareasByUsuarioAndSprint(idUsuario, idSprint);
+        if (tareasUsuario.isEmpty()) {
+            return new ProductivityResponseDTO(0.0, "El usuario no tiene tareas asignadas en este sprint.");
+        }
+
+        long completadas = tareasUsuario.stream().filter(t -> t.getIdEstado() == 5).count();
+        double porcentaje = ((double) completadas / tareasUsuario.size()) * 100;
+        double resultadoRedondeado = Math.round(porcentaje * 100.0) / 100.0;
+
+        // Aquí llamas a tu método privado para guardar en la BD (asegúrate de pasar el
+        // idSprint)
+        guardarRegistroKpi("CUMPLIMIENTO_SPRINT", resultadoRedondeado, null, idUsuario, idSprint);
+
+        return new ProductivityResponseDTO(resultadoRedondeado, "Cumplimiento personal calculado.");
+    }
+
+    @Override
+    public EfficiencyResponseDTO calcularDuracionSprintPersonal(Long idUsuario, Long idSprint) {
+        List<TareaEntity> tareasUsuario = tareaRepository.findTareasByUsuarioAndSprint(idUsuario, idSprint);
+
+        double tiempoRealTotal = tareasUsuario.stream()
+                .mapToDouble(t -> t.getTiempoReal() != null ? t.getTiempoReal() : 0.0).sum();
+        double tiempoEstimadoTotal = tareasUsuario.stream()
+                .mapToDouble(t -> t.getTiempoEstimado() != null ? t.getTiempoEstimado() : 0.0).sum();
+
+        if (tiempoEstimadoTotal == 0.0) {
+            return new EfficiencyResponseDTO(0.0, "No hay estimaciones para calcular la duración.");
+        }
+
+        double porcentaje = (tiempoRealTotal / tiempoEstimadoTotal) * 100;
+        double resultado = Math.round(porcentaje * 100.0) / 100.0;
+
+        guardarRegistroKpi("DURACION_SPRINT", resultado, null, idUsuario, idSprint);
+
+        return new EfficiencyResponseDTO(resultado, "Duración personal calculada.");
+    }
+
+    @Override
+    public ProductivityResponseDTO calcularTiempoCicloPersonal(Long idUsuario, Long idProyecto) {
+        List<TareaEntity> tareas = tareaRepository.findTareasByUsuarioAndProyecto(idUsuario, idProyecto);
+
+        // Solo tomamos en cuenta las tareas ya terminadas (estado 5)
+        List<TareaEntity> terminadas = tareas.stream()
+                .filter(t -> t.getIdEstado() == 5 && t.getTiempoReal() != null)
+                .toList();
+
+        if (terminadas.isEmpty()) {
+            return new ProductivityResponseDTO(0.0, "El usuario no ha completado tareas en este proyecto.");
+        }
+
+        double promedioCiclo = terminadas.stream().mapToDouble(TareaEntity::getTiempoReal).average().orElse(0.0);
+        double resultado = Math.round(promedioCiclo * 100.0) / 100.0;
+
+        guardarRegistroKpi("TIEMPO_CICLO", resultado, idProyecto, idUsuario, null);
+
+        return new ProductivityResponseDTO(resultado, "Tiempo de ciclo personal calculado.");
+    }
+
+    @Override
+    public List<GraficaResponseDTO> obtenerHistorialPersonal(Long idUsuario, String tipo) {
+        return kpiRepository.findByIdUsuarioAndTipoOrderByFechaCalculoAsc(idUsuario, tipo).stream()
+                .map(k -> new GraficaResponseDTO(k.getFechaCalculo(), k.getValor()))
+                .toList();
+    }
+
+    @Override
+    public List<GraficaResponseDTO> obtenerHistorialPersonalPorSprint(Long idUsuario, Long idSprint, String tipo) {
+        return kpiRepository.findByIdUsuarioAndIdSprintAndTipoOrderByFechaCalculoAsc(idUsuario, idSprint, tipo).stream()
+                .map(k -> new GraficaResponseDTO(k.getFechaCalculo(), k.getValor()))
+                .toList();
+    }
+
+    private void guardarRegistroKpi(String tipo, Double valor, Long idProyecto, Long idUsuario, Long idSprint) {
         KpiEntity kpi = new KpiEntity();
         kpi.setTipo(tipo);
         kpi.setValor(valor);
         kpi.setFechaCalculo(new java.util.Date());
         kpi.setIdProyecto(idProyecto);
         kpi.setIdUsuario(idUsuario);
+        kpi.setIdSprint(idSprint);
 
         kpiRepository.save(kpi);
     }

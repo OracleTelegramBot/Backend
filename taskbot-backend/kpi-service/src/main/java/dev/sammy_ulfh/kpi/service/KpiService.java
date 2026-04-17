@@ -21,4 +21,14 @@ public interface KpiService {
     List<ActiveResourceDTO> listarSprintsActivos();
 
     List<ActiveResourceDTO> listarUsuariosActivos();
+
+    ProductivityResponseDTO calcularCumplimientoSprintPersonal(Long idUsuario, Long idSprint);
+
+    EfficiencyResponseDTO calcularDuracionSprintPersonal(Long idUsuario, Long idSprint);
+
+    ProductivityResponseDTO calcularTiempoCicloPersonal(Long idUsuario, Long idProyecto);
+
+    List<GraficaResponseDTO> obtenerHistorialPersonal(Long idUsuario, String tipo);
+
+    List<GraficaResponseDTO> obtenerHistorialPersonalPorSprint(Long idUsuario, Long idSprint, String tipo);
 }

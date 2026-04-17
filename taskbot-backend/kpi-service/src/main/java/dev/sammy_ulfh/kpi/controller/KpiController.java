@@ -44,13 +44,13 @@ public class KpiController {
         return ResponseEntity.ok(kpiService.calcularTiempoCicloProyecto(idProyecto));
     }
 
-    // Precisión de estimación de carga (KPI 12)
+    // Precisión de estimacion de carga (KPI 12)
     @GetMapping("/usuario/{idUsuario}/precision-estimacion")
     public ResponseEntity<EfficiencyResponseDTO> getPrecisionEstimacionUsuario(@PathVariable Long idUsuario) {
         return ResponseEntity.ok(kpiService.calcularPrecisionEstimacionUsuario(idUsuario));
     }
 
-    // Histórico de KPIs para gráficas en Dashboard
+    // Histórico de KPIs para graficas en Dashboard
     @GetMapping("/proyecto/{idProyecto}/history")
     public ResponseEntity<List<KpiEntity>> getKpiHistory(@PathVariable Long idProyecto) {
         return ResponseEntity.ok(kpiService.obtenerHistorialKpisProyecto(idProyecto));
@@ -69,5 +69,42 @@ public class KpiController {
     @GetMapping("/usuarios/activos")
     public ResponseEntity<List<ActiveResourceDTO>> getUsuariosActivos() {
         return ResponseEntity.ok(kpiService.listarUsuariosActivos());
+    }
+
+    // --- ENDPOINTS DE CALCULO PERSONAL (WIDGETS) ---
+
+    @GetMapping("/usuario/{idUsuario}/sprint/{idSprint}/cumplimiento")
+    public ResponseEntity<ProductivityResponseDTO> getCumplimientoPersonal(@PathVariable Long idUsuario,
+            @PathVariable Long idSprint) {
+        return ResponseEntity.ok(kpiService.calcularCumplimientoSprintPersonal(idUsuario, idSprint));
+    }
+
+    @GetMapping("/usuario/{idUsuario}/sprint/{idSprint}/duracion")
+    public ResponseEntity<EfficiencyResponseDTO> getDuracionPersonal(@PathVariable Long idUsuario,
+            @PathVariable Long idSprint) {
+        return ResponseEntity.ok(kpiService.calcularDuracionSprintPersonal(idUsuario, idSprint));
+    }
+
+    @GetMapping("/usuario/{idUsuario}/proyecto/{idProyecto}/tiempo-ciclo")
+    public ResponseEntity<ProductivityResponseDTO> getTiempoCicloPersonal(@PathVariable Long idUsuario,
+            @PathVariable Long idProyecto) {
+        return ResponseEntity.ok(kpiService.calcularTiempoCicloPersonal(idUsuario, idProyecto));
+    }
+
+    // --- ENDPOINTS DE HISTORIAL (GRÁFICAS) ---
+
+    @GetMapping("/usuario/{idUsuario}/history/tipo/{tipoKPI}")
+    public ResponseEntity<List<GraficaResponseDTO>> getHistorialPersonal(@PathVariable Long idUsuario,
+            @PathVariable String tipoKPI) {
+        return ResponseEntity.ok(kpiService.obtenerHistorialPersonal(idUsuario, tipoKPI.toUpperCase()));
+    }
+
+    @GetMapping("/usuario/{idUsuario}/sprint/{idSprint}/history/tipo/{tipoKPI}")
+    public ResponseEntity<List<GraficaResponseDTO>> getHistorialPersonalPorSprint(
+            @PathVariable Long idUsuario,
+            @PathVariable Long idSprint,
+            @PathVariable String tipoKPI) {
+        return ResponseEntity
+                .ok(kpiService.obtenerHistorialPersonalPorSprint(idUsuario, idSprint, tipoKPI.toUpperCase()));
     }
 }

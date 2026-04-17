@@ -13,4 +13,10 @@ public interface KpiRepository extends JpaRepository<KpiEntity, Long> {
     List<KpiEntity> findByIdProyectoOrderByFechaCalculoAsc(Long idProyecto);
 
     List<KpiEntity> findByIdUsuario(Long idUsuario);
+
+    // Historial de un usuario para un KPI sin importar el sprint
+    List<KpiEntity> findByIdUsuarioAndTipoOrderByFechaCalculoAsc(Long idUsuario, String tipo);
+
+    // Historial de un usuario para un KPI dentro de un sprint específico
+    List<KpiEntity> findByIdUsuarioAndIdSprintAndTipoOrderByFechaCalculoAsc(Long idUsuario, Long idSprint, String tipo);
 }
