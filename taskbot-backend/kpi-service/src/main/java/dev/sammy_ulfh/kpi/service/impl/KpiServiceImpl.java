@@ -30,7 +30,7 @@ public class KpiServiceImpl implements KpiService {
     private final UsuarioRepository usuarioRepository;
 
     // Constante para facilitar futuros cambios
-    private static final Long ESTADO_COMPLETADO = 5L;
+    private static final Long ESTADO_COMPLETADO = 3L;
 
     public KpiServiceImpl(TareaRepository tareaRepository, KpiRepository kpiRepository,
             ProyectoRepository proyectoRepository, SprintRepository sprintRepository,
@@ -125,7 +125,7 @@ public class KpiServiceImpl implements KpiService {
 
         if (completadas.isEmpty()) {
             return new ProductivityResponseDTO(0.0,
-                    "l proyecto con ID " + idProyecto + " no tiene tareas completadas para medir el ciclo.");
+                    "El proyecto con ID " + idProyecto + " no tiene tareas completadas para medir el ciclo.");
         }
 
         double promedioCicloReal = completadas.stream()
@@ -220,7 +220,7 @@ public class KpiServiceImpl implements KpiService {
     @Override
     public List<ActiveResourceDTO> listarUsuariosActivos() {
         return usuarioRepository.findAll().stream()
-                // Concatenamos nombre y apellido para que se vea bien en el botón
+                // Se concatena nombre y apellido para que se vea bien en el botón
                 .map(u -> new ActiveResourceDTO(u.getIdUsuario(), u.getNombre() + " " + u.getApellido()))
                 .collect(Collectors.toList());
     }
@@ -232,12 +232,11 @@ public class KpiServiceImpl implements KpiService {
             return new ProductivityResponseDTO(0.0, "El usuario no tiene tareas asignadas en este sprint.");
         }
 
-        long completadas = tareasUsuario.stream().filter(t -> t.getIdEstado() == 5).count();
+        long completadas = tareasUsuario.stream()
+                .filter(t -> t.getIdEstado() != null && t.getIdEstado().equals(ESTADO_COMPLETADO)).count();
         double porcentaje = ((double) completadas / tareasUsuario.size()) * 100;
         double resultadoRedondeado = Math.round(porcentaje * 100.0) / 100.0;
 
-        // Aquí llamas a tu método privado para guardar en la BD (asegúrate de pasar el
-        // idSprint)
         guardarRegistroKpi("CUMPLIMIENTO_SPRINT", resultadoRedondeado, null, idUsuario, idSprint);
 
         return new ProductivityResponseDTO(resultadoRedondeado, "Cumplimiento personal calculado.");
@@ -268,9 +267,10 @@ public class KpiServiceImpl implements KpiService {
     public ProductivityResponseDTO calcularTiempoCicloPersonal(Long idUsuario, Long idProyecto) {
         List<TareaEntity> tareas = tareaRepository.findTareasByUsuarioAndProyecto(idUsuario, idProyecto);
 
-        // Solo tomamos en cuenta las tareas ya terminadas (estado 5)
+        // Solo tomamos en cuenta las tareas ya terminadas (estado 3)
         List<TareaEntity> terminadas = tareas.stream()
-                .filter(t -> t.getIdEstado() == 5 && t.getTiempoReal() != null)
+                .filter(t -> t.getIdEstado() != null && t.getIdEstado().equals(ESTADO_COMPLETADO)
+                        && t.getTiempoReal() != null)
                 .toList();
 
         if (terminadas.isEmpty()) {
