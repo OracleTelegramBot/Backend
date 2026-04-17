@@ -30,4 +30,12 @@ public class TareaEntity {
     @Column(name = "FECHA_LIMITE")
     @Temporal(TemporalType.DATE)
     private java.util.Date fechaLimite;
+
+    @Column(name = "FECHA_INICIO")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date fechaInicio;
+
+    @Column(name = "FECHA_FIN")
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date fechaFin;
 }
