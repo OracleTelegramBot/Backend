@@ -18,6 +18,9 @@ public class TareaEntity {
     @Column(name = "ID_ESTADO")
     private Long idEstado;
 
+    @Column(name = "ID_SPRINT")
+    private Long idSprint;
+
     @Column(name = "TIEMPO_ESTIMADO")
     private Integer tiempoEstimado;
 

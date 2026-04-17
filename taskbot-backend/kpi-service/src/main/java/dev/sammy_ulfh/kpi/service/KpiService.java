@@ -1,10 +1,34 @@
 package dev.sammy_ulfh.kpi.service;
 
+import java.util.List;
+
 import dev.sammy_ulfh.kpi.model.dto.*;
+import dev.sammy_ulfh.kpi.model.entity.KpiEntity;
 
 public interface KpiService {
-    ProductivityResponseDTO calcularProductividadProyecto(Long idProyecto);
-    EfficiencyResponseDTO calcularEficienciaProyecto(Long Id);
-    UserWorkloadDTO obtenerCargaTrabajoUsuario(Long idUsuario);
-    DeadlineComplianceDTO calcularCumplimientoPlazos(Long idProyecto);
+    EfficiencyResponseDTO calcularDuracionSprint(Long idSprint);
+
+    ProductivityResponseDTO calcularCumplimientoSprint(Long idSprint);
+
+    ProductivityResponseDTO calcularTiempoCicloProyecto(Long idProyecto);
+
+    EfficiencyResponseDTO calcularPrecisionEstimacionUsuario(Long idUsuario);
+
+    List<KpiEntity> obtenerHistorialKpisProyecto(Long idProyecto);
+
+    List<ActiveResourceDTO> listarProyectosActivos();
+
+    List<ActiveResourceDTO> listarSprintsActivos();
+
+    List<ActiveResourceDTO> listarUsuariosActivos();
+
+    ProductivityResponseDTO calcularCumplimientoSprintPersonal(Long idUsuario, Long idSprint);
+
+    EfficiencyResponseDTO calcularDuracionSprintPersonal(Long idUsuario, Long idSprint);
+
+    ProductivityResponseDTO calcularTiempoCicloPersonal(Long idUsuario, Long idProyecto);
+
+    List<GraficaResponseDTO> obtenerHistorialPersonal(Long idUsuario, String tipo);
+
+    List<GraficaResponseDTO> obtenerHistorialPersonalPorSprint(Long idUsuario, Long idSprint, String tipo);
 }

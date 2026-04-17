@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VisibleTasksDTO {
-    private Integer totalTasks;
-    private Integer visibleTasks;
-    private Double visiblePercentage;
+public class ActiveResourceDTO {
+    private Long id;
+    private String nombre;
 }

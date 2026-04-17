@@ -19,25 +19,27 @@ public class TelegramWebhookController {
     private final TelegramService telegramService;
 
     @Autowired
-    public TelegramWebhookController(TelegramService telegramService){
+    public TelegramWebhookController(TelegramService telegramService) {
         this.telegramService = telegramService;
     }
 
     @PostMapping
-    public ResponseEntity<String> receiveUpdate(@RequestBody Update update){
+    public ResponseEntity<String> receiveUpdate(@RequestBody Update update) {
         System.out.println("Update ID recibido: " + update.getUpdateId());
 
-        // Extrae la información y la envia al Servicio
-        // Validamos que el la actualizacion nos entregue un mensaje de texto
+        // Manejo de comandos de texto
         if (update.hasMessage() && update.getMessage().hasText()) {
             Long chatId = update.getMessage().getChatId();
             String messageText = update.getMessage().getText();
-
-            // se llama a la implementación del servicio
             telegramService.handleIncomingMessage(chatId, messageText);
         }
+        // Manejo de clics en botones
+        else if (update.hasCallbackQuery()) {
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String callbackData = update.getCallbackQuery().getData();
+            telegramService.handleCallbackQuery(chatId, callbackData);
+        }
 
-        // respuesta de OK a telegram
         return ResponseEntity.ok("OK");
     }
 }
