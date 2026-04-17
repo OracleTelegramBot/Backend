@@ -60,7 +60,8 @@ public class KpiServiceImpl implements KpiService {
                 .sum();
 
         if (tiempoPlanificado == 0.0) {
-            return new EfficiencyResponseDTO(0.0, "No hay tiempo planificado (estimado) en este sprint.");
+            return new EfficiencyResponseDTO(0.0, "No hay tiempo planificado (estimado) en este sprint.",
+                    "0.0 / 0.0 horas");
         }
 
         double porcentajeDuracion = (tiempoReal / tiempoPlanificado) * 100;
@@ -77,7 +78,8 @@ public class KpiServiceImpl implements KpiService {
             mensaje = "[!] Estado de alerta: El tiempo real excedió el considerado en la planificación.";
         }
 
-        return new EfficiencyResponseDTO(porcentajeDuracion, mensaje);
+        return new EfficiencyResponseDTO(porcentajeDuracion, mensaje,
+                tiempoReal + " / " + tiempoPlanificado + " horas");
     }
 
     // Cumplimiento del sprint (que % se logro)
@@ -109,7 +111,8 @@ public class KpiServiceImpl implements KpiService {
 
         ProductivityResponseDTO dto = new ProductivityResponseDTO();
         dto.setProductivityPercentage(porcentajeCumplimiento);
-        dto.setStatusMessage(mensaje + "(" + (int) tareasCompletadas + "/" + (int) totalTareasPlanificadas + "tareas)");
+        dto.setStatusMessage(mensaje);
+        dto.setCalculationDetails((int) tareasCompletadas + " / " + (int) totalTareasPlanificadas + " tareas");
 
         return dto;
     }
@@ -125,7 +128,8 @@ public class KpiServiceImpl implements KpiService {
 
         if (completadas.isEmpty()) {
             return new ProductivityResponseDTO(0.0,
-                    "El proyecto con ID " + idProyecto + " no tiene tareas completadas para medir el ciclo.");
+                    "El proyecto con ID " + idProyecto + " no tiene tareas completadas para medir el ciclo.",
+                    "0.0 / 0.0 hrs");
         }
 
         double promedioCicloReal = completadas.stream()
@@ -151,8 +155,9 @@ public class KpiServiceImpl implements KpiService {
 
         ProductivityResponseDTO dto = new ProductivityResponseDTO();
         dto.setProductivityPercentage(Math.round(promedioCicloReal * 100.0) / 100.0);
-        dto.setStatusMessage(mensaje + " (Promedio real: " + Math.round(promedioCicloReal * 10.0) / 10.0
-                + " hrs vs Estimado: " + Math.round(promedioEstimado * 10.0) / 10.0 + " hrs)");
+        dto.setStatusMessage(mensaje);
+        dto.setCalculationDetails(Math.round(promedioCicloReal * 10.0) / 10.0 + " / "
+                + Math.round(promedioEstimado * 10.0) / 10.0 + " hrs");
 
         return dto;
     }
@@ -194,7 +199,8 @@ public class KpiServiceImpl implements KpiService {
 
         return new EfficiencyResponseDTO(
                 Math.round(precision * 100) / 100.0,
-                mensaje + " (" + Math.round(precision) + "%)");
+                mensaje,
+                totalEstimado + " / " + totalReal + " hrs");
 
     }
 
@@ -229,7 +235,8 @@ public class KpiServiceImpl implements KpiService {
     public ProductivityResponseDTO calcularCumplimientoSprintPersonal(Long idUsuario, Long idSprint) {
         List<TareaEntity> tareasUsuario = tareaRepository.findTareasByUsuarioAndSprint(idUsuario, idSprint);
         if (tareasUsuario.isEmpty()) {
-            return new ProductivityResponseDTO(0.0, "El usuario no tiene tareas asignadas en este sprint.");
+            return new ProductivityResponseDTO(0.0, "El usuario no tiene tareas asignadas en este sprint.",
+                    "0 / 0 tareas");
         }
 
         long completadas = tareasUsuario.stream()
@@ -239,7 +246,8 @@ public class KpiServiceImpl implements KpiService {
 
         guardarRegistroKpi("CUMPLIMIENTO_SPRINT", resultadoRedondeado, null, idUsuario, idSprint);
 
-        return new ProductivityResponseDTO(resultadoRedondeado, "Cumplimiento personal calculado.");
+        return new ProductivityResponseDTO(resultadoRedondeado, "Cumplimiento personal calculado.",
+                completadas + " / " + tareasUsuario.size() + " tareas");
     }
 
     @Override
@@ -252,7 +260,7 @@ public class KpiServiceImpl implements KpiService {
                 .mapToDouble(t -> t.getTiempoEstimado() != null ? t.getTiempoEstimado() : 0.0).sum();
 
         if (tiempoEstimadoTotal == 0.0) {
-            return new EfficiencyResponseDTO(0.0, "No hay estimaciones para calcular la duración.");
+            return new EfficiencyResponseDTO(0.0, "No hay estimaciones para calcular la duración.", "0.0 / 0.0 hrs");
         }
 
         double porcentaje = (tiempoRealTotal / tiempoEstimadoTotal) * 100;
@@ -260,7 +268,8 @@ public class KpiServiceImpl implements KpiService {
 
         guardarRegistroKpi("DURACION_SPRINT", resultado, null, idUsuario, idSprint);
 
-        return new EfficiencyResponseDTO(resultado, "Duración personal calculada.");
+        return new EfficiencyResponseDTO(resultado, "Duración personal calculada.",
+                tiempoRealTotal + " / " + tiempoEstimadoTotal + " hrs");
     }
 
     @Override
@@ -274,7 +283,8 @@ public class KpiServiceImpl implements KpiService {
                 .toList();
 
         if (terminadas.isEmpty()) {
-            return new ProductivityResponseDTO(0.0, "El usuario no ha completado tareas en este proyecto.");
+            return new ProductivityResponseDTO(0.0, "El usuario no ha completado tareas en este proyecto.",
+                    "0 hrs (0 tareas)");
         }
 
         double promedioCiclo = terminadas.stream().mapToDouble(TareaEntity::getTiempoReal).average().orElse(0.0);
@@ -282,7 +292,8 @@ public class KpiServiceImpl implements KpiService {
 
         guardarRegistroKpi("TIEMPO_CICLO", resultado, idProyecto, idUsuario, null);
 
-        return new ProductivityResponseDTO(resultado, "Tiempo de ciclo personal calculado.");
+        return new ProductivityResponseDTO(resultado, "Tiempo de ciclo personal calculado.",
+                String.format("%.1f hrs (en %d tareas)", promedioCiclo, terminadas.size()));
     }
 
     @Override
