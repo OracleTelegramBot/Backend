@@ -11,4 +11,6 @@ public class EfficiencyResponseDTO {
     private Double efficiencyPercentage;
     private String statusMessage;
     private String calculationDetails;
+    private Double actualValue;
+    private Double expectedValue;
 }
