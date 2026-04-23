@@ -126,8 +126,7 @@ public class KpiServiceImpl implements KpiService {
         List<TareaEntity> tareas = tareaRepository.findByIdProyecto(idProyecto);
 
         List<TareaEntity> completadas = tareas.stream()
-                .filter(t -> t.getIdEstado() != null && t.getIdEstado().equals(ESTADO_COMPLETADO)
-                        && t.getFechaInicio() != null && t.getFechaFin() != null)
+                .filter(t -> t.getIdEstado() != null && t.getIdEstado().equals(ESTADO_COMPLETADO))
                 .collect(Collectors.toList());
 
         if (completadas.isEmpty()) {
@@ -137,10 +136,7 @@ public class KpiServiceImpl implements KpiService {
         }
 
         double promedioCicloReal = completadas.stream()
-                .mapToDouble(t -> {
-                    long diff = t.getFechaFin().getTime() - t.getFechaInicio().getTime();
-                    return (double) diff / (1000L * 60 * 60);
-                })
+                .mapToDouble(t -> t.getTiempoReal() != null ? t.getTiempoReal() : 0.0)
                 .average()
                 .orElse(0.0);
 
@@ -307,7 +303,7 @@ public class KpiServiceImpl implements KpiService {
         // Solo tomamos en cuenta las tareas ya terminadas (estado 3)
         List<TareaEntity> terminadas = tareas.stream()
                 .filter(t -> t.getIdEstado() != null && t.getIdEstado().equals(ESTADO_COMPLETADO)
-                        && t.getFechaInicio() != null && t.getFechaFin() != null)
+                        && t.getTiempoReal() != null)
                 .toList();
 
         if (terminadas.isEmpty()) {
@@ -315,13 +311,7 @@ public class KpiServiceImpl implements KpiService {
                     "0.0 / 0.0 hrs", 0.0, 0.0);
         }
 
-        double promedioCicloReal = terminadas.stream()
-                .mapToDouble(t -> {
-                    long diff = t.getFechaFin().getTime() - t.getFechaInicio().getTime();
-                    return (double) diff / (1000L * 60 * 60);
-                })
-                .average()
-                .orElse(0.0);
+        double promedioCicloReal = terminadas.stream().mapToDouble(TareaEntity::getTiempoReal).average().orElse(0.0);
         double promedioEstimado = terminadas.stream()
                 .mapToDouble(t -> t.getTiempoEstimado() != null ? t.getTiempoEstimado() : 0.0)
                 .average()

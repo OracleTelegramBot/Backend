@@ -6,6 +6,7 @@ import dev.sammy_ulfh.telegram.dto.external.EfficiencyResponseDTO;
 import dev.sammy_ulfh.telegram.dto.external.ProductivityResponseDTO;
 import dev.sammy_ulfh.telegram.dto.telegram.TelegramResponseDTO;
 import dev.sammy_ulfh.telegram.service.TelegramService;
+import dev.sammy_ulfh.telegram.service.kafka.TelegramKafkaProducer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.stereotype.Service;
@@ -20,12 +21,14 @@ public class TelegramServiceImpl implements TelegramService {
 
     private final KpiFeignClient kpiClient;
     private final RestTemplate restTemplate;
+    private final TelegramKafkaProducer telegramKafkaProducer;
 
     @Value("${telegram.bot.token}")
     private String botToken;
 
-    public TelegramServiceImpl(KpiFeignClient kpiClient) {
+    public TelegramServiceImpl(KpiFeignClient kpiClient, TelegramKafkaProducer telegramKafkaProducer) {
         this.kpiClient = kpiClient;
+        this.telegramKafkaProducer = telegramKafkaProducer;
         this.restTemplate = new RestTemplate();
     }
 
@@ -38,7 +41,20 @@ public class TelegramServiceImpl implements TelegramService {
         String command = parts[0];
         String arg = parts.length > 1 ? parts[1] : null;
 
-        if (command.equals("/sprint_duracion") || command.equals("/sprint_cumplimiento") ||
+        if (command.equals("/anuncio_urgente") || command.equals("/recordatorio")) {
+            String fullMessage = text.substring(command.length()).trim();
+            if (fullMessage.isEmpty()) {
+                sendToTelegram(chatId, "[-] Debes proveer un mensaje. Uso: " + command + " <mensaje>", null);
+            } else {
+                if (command.equals("/anuncio_urgente")) {
+                    telegramKafkaProducer.enviarAnuncioUrgente(fullMessage);
+                    sendToTelegram(chatId, "[+] Anuncio urgente enviado al equipo y persistido en BD.", null);
+                } else {
+                    telegramKafkaProducer.enviarRecordatorio(fullMessage);
+                    sendToTelegram(chatId, "[+] Recordatorio enviado al equipo y persistido en BD.", null);
+                }
+            }
+        } else if (command.equals("/sprint_duracion") || command.equals("/sprint_cumplimiento") ||
                 command.equals("/ciclo_proyecto") || command.equals("/precision_usuario")) {
 
             if (arg != null) {
@@ -59,7 +75,10 @@ public class TelegramServiceImpl implements TelegramService {
                     "🔹 `/sprint_cumplimiento [id]`\n" +
                     "🔹 `/ciclo_proyecto [id]`\n" +
                     "🔹 `/precision_usuario [id]`\n\n" +
-                    "_Si omites el ID en tu comando, te mostraré una lista para seleccionar._";
+                    "Comandos de Notificaciones por Kafka:\n" +
+                    "🔹 `/anuncio_urgente <mensaje>`\n" +
+                    "🔹 `/recordatorio <mensaje>`\n\n" +
+                    "_Si omites el ID en KPIs, te mostraré una lista para seleccionar._";
             sendToTelegram(chatId, helpText, null);
         } else {
             sendToTelegram(chatId,
