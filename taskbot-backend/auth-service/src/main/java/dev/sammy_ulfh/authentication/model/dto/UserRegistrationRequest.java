@@ -1,28 +1,30 @@
 package dev.sammy_ulfh.authentication.model.dto;
 
 public class UserRegistrationRequest {
-    private String username;
+    private String correo;
     private String password;
-    private String email;
     private String firstName;
     private String lastName;
+    private Long idRol;
+    private Long idEquipo;
     
     public UserRegistrationRequest() {}
     
-    public UserRegistrationRequest(String username, String password, String email, String firstName, String lastName) {
-        this.username = username;
+    public UserRegistrationRequest(String correo, String password, String firstName, String lastName, Long idRol, Long idEquipo) {
+        this.correo = correo;
         this.password = password;
-        this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.idRol = idRol;
+        this.idEquipo = idEquipo;
     }
     
-    public String getUsername() {
-        return username;
+    public String getCorreo() {
+        return correo;
     }
     
-    public void setUsername(String username) {
-        this.username = username;
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
     
     public String getPassword() {
@@ -31,14 +33,6 @@ public class UserRegistrationRequest {
     
     public void setPassword(String password) {
         this.password = password;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
     }
     
     public String getFirstName() {
@@ -55,5 +49,21 @@ public class UserRegistrationRequest {
     
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public Long getIdRol() {
+        return idRol;
+    }
+
+    public void setIdRol(Long idRol) {
+        this.idRol = idRol;
+    }
+
+    public Long getIdEquipo() {
+        return idEquipo;
+    }
+
+    public void setIdEquipo(Long idEquipo) {
+        this.idEquipo = idEquipo;
     }
 }

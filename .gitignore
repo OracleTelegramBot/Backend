@@ -1,3 +1,5 @@
 ./taskbot-backend/kpi-service/src/main/resources/Wallet/*
 **/Wallet/**
 **/Wallet/*
+Wallet/
+.env

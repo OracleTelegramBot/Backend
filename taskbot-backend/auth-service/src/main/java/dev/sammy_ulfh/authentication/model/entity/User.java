@@ -6,54 +6,46 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "Usuario")
 public class User {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", allocationSize = 50)
+    @Column(name = "id_usuario")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
+    @SequenceGenerator(name = "usuario_seq", allocationSize = 50)
     private Long id;
     
-    @Column(nullable = false, unique = true)
-    @NotBlank(message = "Username cannot be blank")
-    private String username;
+    @Column(name = "correo", nullable = false, unique = true)
+    @NotBlank(message = "Correo cannot be blank")
+    @Email(message = "Correo should be valid")
+    private String email;
     
-    @Column(nullable = false)
+    @Column(name = "contrasena", nullable = false)
     @NotBlank(message = "Password cannot be blank")
     private String password;
     
-    @Column(nullable = false, unique = true)
-    @NotBlank(message = "Email cannot be blank")
-    @Email(message = "Email should be valid")
-    private String email;
-    
-    @Column(name = "FIRST_NAME")
+    @Column(name = "nombre", nullable = false)
     private String firstName;
     
-    @Column(name = "LAST_NAME")
+    @Column(name = "apellido", nullable = false)
     private String lastName;
     
-    @Column(name = "IS_ACTIVE")
-    private Boolean isActive = true;
+    @Column(name = "id_rol", nullable = false)
+    private Long idRol;
     
-    @Column(name = "CREATED_AT")
-    private Long createdAt;
-    
-    @Column(name = "UPDATED_AT")
-    private Long updatedAt;
+    @Column(name = "id_equipo")
+    private Long idEquipo;
     
     public User() {}
     
-    public User(Long id, String username, String password, String email, String firstName, String lastName, Boolean isActive, Long createdAt, Long updatedAt) {
+    public User(Long id, String email, String password, String firstName, String lastName, Long idRol, Long idEquipo) {
         this.id = id;
-        this.username = username;
-        this.password = password;
         this.email = email;
+        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.isActive = isActive;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.idRol = idRol;
+        this.idEquipo = idEquipo;
     }
     
     public Long getId() {
@@ -64,12 +56,12 @@ public class User {
         this.id = id;
     }
     
-    public String getUsername() {
-        return username;
+    public String getEmail() {
+        return email;
     }
     
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
     
     public String getPassword() {
@@ -78,14 +70,6 @@ public class User {
     
     public void setPassword(String password) {
         this.password = password;
-    }
-    
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
     }
     
     public String getFirstName() {
@@ -104,28 +88,20 @@ public class User {
         this.lastName = lastName;
     }
     
-    public Boolean getIsActive() {
-        return isActive;
+    public Long getIdRol() {
+        return idRol;
     }
     
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setIdRol(Long idRol) {
+        this.idRol = idRol;
     }
-    
-    public Long getCreatedAt() {
-        return createdAt;
+
+    public Long getIdEquipo() {
+        return idEquipo;
     }
-    
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
-    }
-    
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-    
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
+
+    public void setIdEquipo(Long idEquipo) {
+        this.idEquipo = idEquipo;
     }
     
     @Override
@@ -134,26 +110,23 @@ public class User {
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
         return Objects.equals(id, user.id) &&
-               Objects.equals(username, user.username) &&
                Objects.equals(email, user.email);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, email);
+        return Objects.hash(id, email);
     }
     
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", isActive=" + isActive +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                ", idRol=" + idRol +
+                ", idEquipo=" + idEquipo +
                 '}';
     }
 }

@@ -6,17 +6,25 @@ public class AuthResponse {
     private String token;
     private String type = "Bearer";
     private Long expiresIn;
-    private String username;
-    private String email;
+    private String correo;
+    
+    // Additional Data for Frontend / Dashboard
+    private Long idUsuario;
+    private String nombre;
+    private String apellido;
+    private Long idRol;
     
     public AuthResponse() {}
     
-    public AuthResponse(String token, String type, Long expiresIn, String username, String email) {
+    public AuthResponse(String token, String type, Long expiresIn, String correo, Long idUsuario, String nombre, String apellido, Long idRol) {
         this.token = token;
         this.type = type;
         this.expiresIn = expiresIn;
-        this.username = username;
-        this.email = email;
+        this.correo = correo;
+        this.idUsuario = idUsuario;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.idRol = idRol;
     }
     
     public String getToken() {
@@ -44,20 +52,44 @@ public class AuthResponse {
         this.expiresIn = expiresIn;
     }
     
-    public String getUsername() {
-        return username;
+    public String getCorreo() {
+        return correo;
     }
     
-    public void setUsername(String username) {
-        this.username = username;
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
     
-    public String getEmail() {
-        return email;
+    public Long getIdUsuario() {
+        return idUsuario;
     }
-    
-    public void setEmail(String email) {
-        this.email = email;
+
+    public void setIdUsuario(Long idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public Long getIdRol() {
+        return idRol;
+    }
+
+    public void setIdRol(Long idRol) {
+        this.idRol = idRol;
     }
     
     public static Builder builder() {
@@ -68,8 +100,11 @@ public class AuthResponse {
         private String token;
         private String type = "Bearer";
         private Long expiresIn;
-        private String username;
-        private String email;
+        private String correo;
+        private Long idUsuario;
+        private String nombre;
+        private String apellido;
+        private Long idRol;
         
         public Builder token(String token) {
             this.token = token;
@@ -86,18 +121,33 @@ public class AuthResponse {
             return this;
         }
         
-        public Builder username(String username) {
-            this.username = username;
+        public Builder correo(String correo) {
+            this.correo = correo;
             return this;
         }
         
-        public Builder email(String email) {
-            this.email = email;
+        public Builder idUsuario(Long idUsuario) {
+            this.idUsuario = idUsuario;
+            return this;
+        }
+        
+        public Builder nombre(String nombre) {
+            this.nombre = nombre;
+            return this;
+        }
+        
+        public Builder apellido(String apellido) {
+            this.apellido = apellido;
+            return this;
+        }
+        
+        public Builder idRol(Long idRol) {
+            this.idRol = idRol;
             return this;
         }
         
         public AuthResponse build() {
-            return new AuthResponse(token, type, expiresIn, username, email);
+            return new AuthResponse(token, type, expiresIn, correo, idUsuario, nombre, apellido, idRol);
         }
     }
 }

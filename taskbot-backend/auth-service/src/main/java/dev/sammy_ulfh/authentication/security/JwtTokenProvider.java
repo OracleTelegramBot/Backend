@@ -18,21 +18,23 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
     
-    public String generateToken(String username) {
+    public String generateToken(String correo, Long idUsuario, Long idRol) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
         
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(correo)
+                .claim("id", idUsuario)
+                .claim("rol", idRol)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
     
-    public String getUsernameFromToken(String token) {
+    public String getCorreoFromToken(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
             return Jwts.parserBuilder()

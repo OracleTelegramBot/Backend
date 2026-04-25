@@ -20,7 +20,7 @@ public class AuthenticationController {
     
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
-        System.out.println("Login request for user: " + authRequest.getUsername());
+        System.out.println("Login request for user: " + authRequest.getCorreo());
         AuthResponse response = authenticationService.login(authRequest);
         return ResponseEntity.ok(response);
     }
@@ -35,13 +35,14 @@ public class AuthenticationController {
     
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody UserRegistrationRequest registrationRequest) {
-        System.out.println("Registration request for user: " + registrationRequest.getUsername());
+        System.out.println("Registration request for user: " + registrationRequest.getCorreo());
         User user = new User();
-        user.setUsername(registrationRequest.getUsername());
+        user.setEmail(registrationRequest.getCorreo());
         user.setPassword(registrationRequest.getPassword());
-        user.setEmail(registrationRequest.getEmail());
         user.setFirstName(registrationRequest.getFirstName());
         user.setLastName(registrationRequest.getLastName());
+        user.setIdRol(registrationRequest.getIdRol());
+        user.setIdEquipo(registrationRequest.getIdEquipo());
         
         User createdUser = authenticationService.createUser(user);
         return ResponseEntity.ok(createdUser);
