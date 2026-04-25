@@ -6,7 +6,7 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>dev.sammy-ulfh</groupId>
 	<artifactId>kpi</artifactId>
@@ -119,6 +119,14 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+	 <dependency>
+	  <groupId>org.springframework.kafka</groupId>
+	  <artifactId>spring-kafka</artifactId>
+	 </dependency>
 	</dependencies>
 
 	<build>
