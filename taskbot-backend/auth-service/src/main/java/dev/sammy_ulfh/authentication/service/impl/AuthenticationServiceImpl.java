@@ -51,7 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String token = jwtTokenProvider.generateToken(
             foundUser.getEmail(), 
             foundUser.getId(), 
-            foundUser.getIdRol()
+            foundUser.getIdRol().longValue()
         );
         
         System.out.println("User logged in successfully: " + authRequest.getCorreo());
@@ -64,7 +64,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .idUsuario(foundUser.getId())
                 .nombre(foundUser.getFirstName())
                 .apellido(foundUser.getLastName())
-                .idRol(foundUser.getIdRol())
+                .idRol(foundUser.getIdRol().longValue())
+                .idEquipo(foundUser.getIdEquipo())
                 .build();
     }
     
@@ -84,7 +85,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .idUsuario(foundUser.getId())
                         .nombre(foundUser.getFirstName())
                         .apellido(foundUser.getLastName())
-                        .idRol(foundUser.getIdRol())
+                        .idRol(foundUser.getIdRol().longValue())
+                        .idEquipo(foundUser.getIdEquipo())
                         .build();
             }
         }

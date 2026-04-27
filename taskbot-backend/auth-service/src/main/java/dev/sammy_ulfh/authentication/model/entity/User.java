@@ -6,13 +6,13 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @Entity
-@Table(name = "Usuario")
+@Table(name = "USUARIO")
 public class User {
     
     @Id
     @Column(name = "id_usuario")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_seq")
-    @SequenceGenerator(name = "usuario_seq", allocationSize = 50)
+    @SequenceGenerator(name = "usuario_seq", sequenceName = "USUARIO_SEQ", allocationSize = 1)
     private Long id;
     
     @Column(name = "correo", nullable = false, unique = true)
@@ -31,14 +31,14 @@ public class User {
     private String lastName;
     
     @Column(name = "id_rol", nullable = false)
-    private Long idRol;
+    private Integer idRol;
     
     @Column(name = "id_equipo")
     private Long idEquipo;
     
     public User() {}
     
-    public User(Long id, String email, String password, String firstName, String lastName, Long idRol, Long idEquipo) {
+    public User(Long id, String email, String password, String firstName, String lastName, Integer idRol, Long idEquipo) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -88,11 +88,11 @@ public class User {
         this.lastName = lastName;
     }
     
-    public Long getIdRol() {
+    public Integer getIdRol() {
         return idRol;
     }
     
-    public void setIdRol(Long idRol) {
+    public void setIdRol(Integer idRol) {
         this.idRol = idRol;
     }
 

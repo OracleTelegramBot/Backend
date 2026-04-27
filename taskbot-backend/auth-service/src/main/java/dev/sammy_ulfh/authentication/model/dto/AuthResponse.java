@@ -13,10 +13,11 @@ public class AuthResponse {
     private String nombre;
     private String apellido;
     private Long idRol;
+    private Long idEquipo;
     
     public AuthResponse() {}
     
-    public AuthResponse(String token, String type, Long expiresIn, String correo, Long idUsuario, String nombre, String apellido, Long idRol) {
+    public AuthResponse(String token, String type, Long expiresIn, String correo, Long idUsuario, String nombre, String apellido, Long idRol, Long idEquipo) {
         this.token = token;
         this.type = type;
         this.expiresIn = expiresIn;
@@ -25,6 +26,7 @@ public class AuthResponse {
         this.nombre = nombre;
         this.apellido = apellido;
         this.idRol = idRol;
+        this.idEquipo = idEquipo;
     }
     
     public String getToken() {
@@ -91,6 +93,14 @@ public class AuthResponse {
     public void setIdRol(Long idRol) {
         this.idRol = idRol;
     }
+
+    public Long getIdEquipo() {
+        return idEquipo;
+    }
+
+    public void setIdEquipo(Long idEquipo) {
+        this.idEquipo = idEquipo;
+    }
     
     public static Builder builder() {
         return new Builder();
@@ -105,6 +115,7 @@ public class AuthResponse {
         private String nombre;
         private String apellido;
         private Long idRol;
+        private Long idEquipo;
         
         public Builder token(String token) {
             this.token = token;
@@ -146,8 +157,13 @@ public class AuthResponse {
             return this;
         }
         
+        public Builder idEquipo(Long idEquipo) {
+            this.idEquipo = idEquipo;
+            return this;
+        }
+        
         public AuthResponse build() {
-            return new AuthResponse(token, type, expiresIn, correo, idUsuario, nombre, apellido, idRol);
+            return new AuthResponse(token, type, expiresIn, correo, idUsuario, nombre, apellido, idRol, idEquipo);
         }
     }
 }
