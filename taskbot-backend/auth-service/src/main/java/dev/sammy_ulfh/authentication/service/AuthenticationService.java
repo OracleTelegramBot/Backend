@@ -8,4 +8,5 @@ public interface AuthenticationService {
     AuthResponse login(AuthRequest authRequest);
     AuthResponse validateToken(String token);
     User createUser(User user);
+    User setPassword(Long userId, String rawPassword);
 }

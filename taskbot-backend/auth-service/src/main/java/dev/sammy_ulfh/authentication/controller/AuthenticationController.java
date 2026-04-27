@@ -2,6 +2,7 @@ package dev.sammy_ulfh.authentication.controller;
 
 import dev.sammy_ulfh.authentication.model.dto.AuthRequest;
 import dev.sammy_ulfh.authentication.model.dto.AuthResponse;
+import dev.sammy_ulfh.authentication.model.dto.SetPasswordRequest;
 import dev.sammy_ulfh.authentication.model.dto.UserRegistrationRequest;
 import dev.sammy_ulfh.authentication.model.entity.User;
 import dev.sammy_ulfh.authentication.service.AuthenticationService;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -87,6 +89,28 @@ public class AuthenticationController {
 
         User createdUser = authenticationService.createUser(user);
         return ResponseEntity.ok(createdUser);
+    }
+
+    @Operation(
+            summary = "Asignar / actualizar contraseña de usuario existente",
+            description = "Establece (o reemplaza) la contraseña de un usuario que ya existe en la base de datos. " +
+                          "El valor recibido se cifra automáticamente con BCrypt antes de persistirlo. " +
+                          "Útil para usuarios pre-creados en Oracle que aún no tienen contraseña registrada."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada exitosamente",
+                    content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "400", description = "Contraseña inválida (vacía o muy corta)", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado", content = @Content)
+    })
+    @PutMapping("/users/{id}/password")
+    public ResponseEntity<User> setPassword(
+            @Parameter(description = "ID del usuario al que se le asignará la contraseña", required = true, example = "1")
+            @PathVariable Long id,
+            @Valid @RequestBody SetPasswordRequest request) {
+        System.out.println("Set-password request for userId: " + id);
+        User updated = authenticationService.setPassword(id, request.getPassword());
+        return ResponseEntity.ok(updated);
     }
 
     @Operation(summary = "Health check", description = "Verifica que el servicio de autenticación esté activo.")

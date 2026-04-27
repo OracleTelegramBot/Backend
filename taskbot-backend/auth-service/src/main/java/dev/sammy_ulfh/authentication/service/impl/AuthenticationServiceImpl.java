@@ -103,4 +103,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         
         return userRepository.save(user);
     }
+
+    @Override
+    public User setPassword(Long userId, String rawPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + userId));
+
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        User saved = userRepository.save(user);
+        saved.setPassword(null); // nunca exponemos el hash en la respuesta
+        return saved;
+    }
 }
