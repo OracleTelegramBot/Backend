@@ -31,19 +31,28 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
-            // 1. Aplica la configuración de CorsConfig.java
+            // 1. Aplicamos CORS antes que cualquier otra regla
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 2. IMPORTANTE: Permitir el método OPTIONS para que el navegador pase el Preflight
+                // 2. REGLA CRÍTICA: Permitir todos los preflights del navegador
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
-                // 3. Tus rutas públicas existentes
-                .requestMatchers("/api/v1/kpi/public/**", 
-                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
-                                 "/ws/**", "/actuator/**", "/error").permitAll() 
+                // 3. Rutas públicas
+                .requestMatchers(
+                    "/api/v1/kpi/public/**", 
+                    "/swagger-ui.html", 
+                    "/swagger-ui/**", 
+                    "/v3/api-docs/**",
+                    "/ws/**", 
+                    "/actuator/**", 
+                    "/error"
+                ).permitAll()
+                
+                // 4. Todo lo demás requiere token
                 .anyRequest().authenticated()
             )
+            // 5. El filtro JWT se añade después de las reglas de CORS
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
             
         return http.build();
