@@ -37,15 +37,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Optional<User> user = userRepository.findByEmail(authRequest.getCorreo());
         
         if (user.isEmpty()) {
-            System.err.println("User not found: " + authRequest.getCorreo());
-            throw new RuntimeException("Invalid email or password");
+            System.err.println("Usuario no encontrado: " + authRequest.getCorreo());
+            throw new RuntimeException("Correo o contraseña inválidos.");
         }
         
         User foundUser = user.get();
         
         if (!passwordEncoder.matches(authRequest.getPassword(), foundUser.getPassword())) {
-            System.err.println("Invalid password for user: " + authRequest.getCorreo());
-            throw new RuntimeException("Invalid email or password");
+            System.err.println("Contraseña inválida.: " + authRequest.getCorreo());
+            throw new RuntimeException("Correo o contraseña inválidos.");
         }
         
         String token = jwtTokenProvider.generateToken(
@@ -54,7 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             foundUser.getIdRol().longValue()
         );
         
-        System.out.println("User logged in successfully: " + authRequest.getCorreo());
+        System.out.println("Logueo de usuario exitoso: " + authRequest.getCorreo());
         
         return AuthResponse.builder()
                 .token(token)
@@ -90,13 +90,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .build();
             }
         }
-        throw new RuntimeException("Invalid token");
+        throw new RuntimeException("Token invalido.");
     }
     
     @Override
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new RuntimeException("Correo en existencia.");
         }
         
         user.setPassword(passwordEncoder.encode(user.getPassword()));
