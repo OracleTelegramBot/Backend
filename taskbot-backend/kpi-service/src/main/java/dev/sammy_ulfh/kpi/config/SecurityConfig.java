@@ -1,9 +1,9 @@
 package dev.sammy_ulfh.kpi.config;
 
 import dev.sammy_ulfh.kpi.security.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,9 +31,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            // 1. Aplica la configuración de CorsConfig.java
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // 2. IMPORTANTE: Permitir el método OPTIONS para que el navegador pase el Preflight
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // 3. Tus rutas públicas existentes
                 .requestMatchers("/api/v1/kpi/public/**", 
                                  "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
                                  "/ws/**", "/actuator/**", "/error").permitAll() 
