@@ -42,7 +42,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of(
-                "http://localhost:[*]",
+                "http://localhost:8081",
+                "http://localhost:5173",
+                "http://localhost:8080",
                 "https://sammy-ulfh.dev",
                 "https://www.sammy-ulfh.dev",
                 "https://hoppscotch.io"
