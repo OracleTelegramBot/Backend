@@ -1,3 +1,30 @@
-./taskbot-backend/kpi-service/src/main/resources/Wallet/*
-**/Wallet/**
-**/Wallet/*
+# Maven
+**/target/
+
+# Gradle
+**/build/
+**/.gradle/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Variables de entorno
+.env
+.env.local
+
+# Wallet
+Wallet/
+**/Wallet/
