@@ -86,6 +86,25 @@ services:
     volumes:
       - ./Wallet:/app/Wallet
 
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: ai-service
+    restart: on-failure
+    networks:
+      - broker-kafka
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=${DB_URL}
+      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - TNS_ADMIN=/app/Wallet
+      - ORACLE_WALLET_PATH=/app/Wallet
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./Wallet:/app/Wallet
+
   telegram-service:
     build: 
       context: ./telegram-service

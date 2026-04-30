@@ -10,6 +10,7 @@ dev/sammy_ulfh/ai/service/AiAnalysisService.class
 dev/sammy_ulfh/ai/repository/UserRepository.class
 dev/sammy_ulfh/ai/AiApplication.class
 dev/sammy_ulfh/ai/dto/ChatRequest.class
+dev/sammy_ulfh/ai/config/OracleWalletConfig.class
 dev/sammy_ulfh/ai/dto/AiAnalysisResponse.class
 dev/sammy_ulfh/ai/entity/TaskEntity.class
 dev/sammy_ulfh/ai/model/Task.class
