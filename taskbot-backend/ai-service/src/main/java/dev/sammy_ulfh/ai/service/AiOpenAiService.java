@@ -1,42 +1,56 @@
 package dev.sammy_ulfh.ai.service;
 
-import com.theokanning.openai.completion.chat.*;
-import com.theokanning.openai.service.OpenAiService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AiOpenAiService {
 
-    private final OpenAiService service;
+    @Value("${gemini.api.url}")
+    private String apiUrl;
 
-    public AiOpenAiService(@Value("${openai.api.key}") String key) {
-        this.service = new OpenAiService(key, Duration.ofSeconds(20));
-    }
+    @Value("${gemini.max-output-tokens:1024}")
+    private int maxOutputTokens;
+
+    @Value("${gemini.temperature:0.7}")
+    private double temperature;
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public String generateResponse(String prompt) {
         try {
-            ChatMessage system = new ChatMessage("system",
-                    "Eres un asistente experto en gestión ágil. Responde claro y estructurado.");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            ChatMessage user = new ChatMessage("user", prompt);
+            Map<String, Object> body = Map.of(
+                "contents", List.of(
+                    Map.of("parts", List.of(Map.of("text", prompt)))
+                ),
+                "generationConfig", Map.of(
+                    "maxOutputTokens", maxOutputTokens,
+                    "temperature", temperature
+                )
+            );
 
-            ChatCompletionRequest request = ChatCompletionRequest.builder()
-                    .model("gpt-4") // 🔥 CAMBIO: mejor modelo
-                    .messages(List.of(system, user))
-                    .maxTokens(300) // 🔥 control costo
-                    .temperature(0.3) // 🔥 más precisión
-                    .build();
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, request, Map.class);
 
-            ChatCompletionResult result = service.createChatCompletion(request);
+            List<Map<String, Object>> candidates =
+                (List<Map<String, Object>>) response.getBody().get("candidates");
+            Map<String, Object> content =
+                (Map<String, Object>) candidates.get(0).get("content");
+            List<Map<String, Object>> parts =
+                (List<Map<String, Object>>) content.get("parts");
 
-            return result.getChoices().get(0).getMessage().getContent();
+            return (String) parts.get(0).get("text");
 
         } catch (Exception e) {
-            throw new RuntimeException("Error IA: " + e.getMessage());
+            throw new RuntimeException("Error Gemini: " + e.getMessage());
         }
     }
 }

@@ -36,6 +36,10 @@ public class TaskEntity {
     @Column(name = "ID_SPRINT")
     private Long sprintId;
 
+    @Lob
+    @Column(name = "EMBEDDING")
+    private byte[] embedding;
+
     public TaskEntity() {
     }
 
@@ -109,5 +113,13 @@ public class TaskEntity {
 
     public void setSprintId(Long sprintId) {
         this.sprintId = sprintId;
+    }
+
+    public byte[] getEmbedding() {
+        return embedding;
+    }
+
+    public void setEmbedding(byte[] embedding) {
+        this.embedding = embedding;
     }
 }

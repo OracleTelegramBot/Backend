@@ -41,12 +41,7 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
-		<!-- OpenAI -->
-		<dependency>
-			<groupId>com.theokanning.openai-gpt3-java</groupId>
-			<artifactId>service</artifactId>
-			<version>0.18.2</version>
-		</dependency>
+		<!-- Gemini (uses Spring RestTemplate, no extra SDK needed) -->
 
 		<!-- Oracle -->
 		<dependency>

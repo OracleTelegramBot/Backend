@@ -1,3 +1,4 @@
+//ai-service/src/main/java/dev/sammy_ulfh/ai/service/AiChatService.java
 package dev.sammy_ulfh.ai.service;
 
 import dev.sammy_ulfh.ai.model.SprintData;
@@ -5,6 +6,8 @@ import dev.sammy_ulfh.ai.model.Task;
 import dev.sammy_ulfh.ai.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 public class AiChatService {
@@ -15,14 +18,19 @@ public class AiChatService {
     @Autowired
     private DataService dataService;
 
+    @Autowired
+    private VectorSearchService vectorSearchService;
+
     public String chat(String message, Long userId, Long sprintId) {
         SprintData sprintData = dataService.buildSprintData(userId, sprintId);
-        String context = buildContext(sprintData, userId);
+
+        Set<Long> relevantIds = vectorSearchService.findSimilarTaskIds(message, sprintId, 5);
+        String context = buildContext(sprintData, userId, relevantIds);
 
         String prompt = """
 Eres un asistente experto en gestión de proyectos ágiles.
 
-Contexto del sprint:
+Contexto del sprint (tareas más relevantes para la pregunta):
 %s
 
 Pregunta:
@@ -32,7 +40,7 @@ Pregunta:
         return aiService.generateResponse(prompt);
     }
 
-    private String buildContext(SprintData sprintData, Long userId) {
+    private String buildContext(SprintData sprintData, Long userId, Set<Long> relevantIds) {
         if (sprintData == null) return "Sin datos.";
 
         StringBuilder ctx = new StringBuilder();
@@ -45,8 +53,11 @@ Pregunta:
         }
 
         if (sprintData.getActiveTasks() != null && !sprintData.getActiveTasks().isEmpty()) {
-            ctx.append("Tareas del sprint:\n");
+            ctx.append("Tareas:\n");
             for (Task task : sprintData.getActiveTasks()) {
+                if (!relevantIds.isEmpty() && !relevantIds.contains(Long.parseLong(task.getId()))) {
+                    continue;
+                }
                 boolean isOwn = userIdStr != null && userIdStr.equals(task.getUserId());
                 ctx.append("- [").append(task.getStatus()).append("] ")
                    .append(task.getName())
