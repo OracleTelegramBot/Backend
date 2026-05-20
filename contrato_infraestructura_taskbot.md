@@ -148,7 +148,10 @@ Si en el futuro la cuenta se upgradea a paid y la cuota sube, se puede volver al
 | Dynamic Group DevOps | `ocid1.dynamicgroup.oc1..aaaaaaaao6bdgm6rvs7rzamuysa6tapyxfha4p4o7d6h32bu4reqrlsr7lzq` | creado |
 | Dynamic Group OKE | `ocid1.dynamicgroup.oc1..aaaaaaaay5gtfewvwumq33763wjm76fj6cafobwu74gh2vhkojhkuc67ob2a` | creado |
 | Dynamic Group Functions | `ocid1.dynamicgroup.oc1..aaaaaaaaqnkcp53m2mbebwcciqvrbk5ica6mahkfps7qykh2s5qo6dbh6mnq` | creado |
-| 4 policies (devops, oke, oke_service, functions) | (ver consola) | creado |
+| Policy `taskbot-devops-policy` | `ocid1.policy.oc1..aaaaaaaaoaf72l44o4ubc3jufxlelrhlq35b5cgfys3wci4zmxblqn4dbrvq` | creado |
+| Policy `taskbot-oke-policy` | `ocid1.policy.oc1..aaaaaaaaqdde4hwsv2ezcwhs526pltzflqvx5sgfvmpen5gyh5q4uo77gokq` | creado |
+| Policy `taskbot-oke-service-policy` | `ocid1.policy.oc1..aaaaaaaalaag6hn3hln5l72ac6imqpjamqtco5snyj4ysheoemmezsqyolca` | creado |
+| Policy `taskbot-functions-policy` | `ocid1.policy.oc1..aaaaaaaazdra4watloiwoth5acvrut5xidxk4qpzud5xcqpdcrdywclujcca` | creado |
 
 ### Vault y secretos
 
