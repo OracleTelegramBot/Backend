@@ -1,11 +1,11 @@
 # Contrato de Infraestructura — TaskBot
 
-**Versión:** 0.1 (borrador inicial)
+**Versión:** 0.2
 **Fecha:** 19 de mayo de 2026
 **Owner del documento:** Leo (Persona 1)
-**Estado:** pendiente de ratificación en el kick-off
+**Estado:** Capa base de Leo aplicada parcialmente (compartment + IAM + networking). Pendientes: Vault, Container Registry, Load Balancers, Observabilidad.
 
-Este documento centraliza todos los nombres, decisiones y placeholders de OCIDs necesarios para que las cuatro personas del equipo trabajen en paralelo desde el día 1. Cualquier cambio a este contrato requiere acuerdo del equipo completo y se versiona en el [changelog](#changelog) al final.
+Este documento centraliza todos los nombres, decisiones y OCIDs reales del proyecto. Cualquier cambio requiere acuerdo del equipo y se versiona en el [changelog](#changelog) al final.
 
 ---
 
@@ -29,23 +29,22 @@ Este documento centraliza todos los nombres, decisiones y placeholders de OCIDs 
 |---|---|
 | Repositorio | `taskbot-infra` |
 | Backend de state | OCI Object Storage (bucket dedicado) |
-| Bootstrap del bucket | Carpeta `bootstrap/` con state local; ese mini-Terraform crea el bucket. El resto del código usa el bucket como backend remoto |
-| Versión mínima de Terraform | 1.5 |
-| Provider OCI | Fijado a versión específica en `versions.tf`, nunca `latest` |
+| Bucket de state | `taskbot-terraform-state` (namespace: `ax5o32ww5jyq`) |
+| Bootstrap del bucket | Carpeta `bootstrap/` con state local. Ya aplicado |
+| Versión mínima de Terraform / OpenTofu | 1.6 |
+| Provider OCI | `oracle/oci ~> 6.0` |
 
 ### 1.3 Carga de secretos al Vault
 
-Los valores reales de los secretos **no** se gestionan desde Terraform (evita exposición en el state file).
+Los valores reales de los secretos **no** se gestionan desde Terraform.
 
 | Acción | Quién | Cómo |
 |---|---|---|
-| Crear el contenedor del Secret en Vault | Leo (Terraform) | Recurso vacío, listo para recibir el valor |
+| Crear el contenedor del Secret en Vault | Leo (Terraform) | Recurso con placeholder, lifecycle ignora cambios al contenido |
 | Cargar el valor real | Leo (manual) | OCI CLI o consola, una sola vez por secret |
 | Sincronizar Vault → Kubernetes Secret | Lili | A definir: External Secrets Operator, job de Helm, o init container |
 
 ### 1.4 Ownership de recursos no explícitos en el documento original
-
-Estos recursos no aparecen asignados a ninguna persona en el reparto del doc; quedan asumidos por Leo como infraestructura base:
 
 | Recurso | Justificación |
 |---|---|
@@ -56,8 +55,6 @@ Estos recursos no aparecen asignados a ninguna persona en el reparto del doc; qu
 ---
 
 ## 2. Tabla maestra de nombres acordados
-
-Estos son los nombres definitivos. Cualquier referencia desde código, manifests, build_spec o tests usa exactamente estos strings.
 
 ### 2.1 Infraestructura base (Leo)
 
@@ -126,48 +123,99 @@ Estos son los nombres definitivos. Cualquier referencia desde código, manifests
 
 ---
 
-## 3. Tabla de OCIDs (placeholders)
+## 3. Tabla de OCIDs
 
-Tabla viva. Leo la actualiza conforme Terraform crea los recursos. Las demás personas referencian estos OCIDs en su código y manifests.
+Status `creado` = recurso ya provisionado y verificado. `pendiente` = no creado aún. `por verificar` = existe en OCI pero falta capturar el OCID exacto.
 
-| Recurso | Nombre | OCID | Status | Owner |
-|---|---|---|---|---|
-| Tenancy | (heredado) | `<TO_FILL>` | pendiente | Leo |
-| Compartment padre | (TBD) | `<TO_FILL>` | pendiente | Leo |
-| Compartment proyecto | `taskbot-compartment` | `<TO_FILL>` | pendiente | Leo |
-| VCN | `taskbot-vcn` | `<TO_FILL>` | pendiente | Leo |
-| Subnet pública | `taskbot-public-subnet` | `<TO_FILL>` | pendiente | Leo |
-| Subnet privada | `taskbot-private-subnet` | `<TO_FILL>` | pendiente | Leo |
-| Internet Gateway | — | `<TO_FILL>` | pendiente | Leo |
-| NAT Gateway | — | `<TO_FILL>` | pendiente | Leo |
-| Vault | `taskbot-vault` | `<TO_FILL>` | pendiente | Leo |
-| Master Key | — | `<TO_FILL>` | pendiente | Leo |
-| Secret DB creds | — | `<TO_FILL>` | pendiente | Leo |
-| Secret wallet | — | `<TO_FILL>` | pendiente | Leo |
-| Secret JWT | — | `<TO_FILL>` | pendiente | Leo |
-| Secret OpenAI | — | `<TO_FILL>` | pendiente | Leo |
-| Secret Telegram | — | `<TO_FILL>` | pendiente | Leo |
-| Secret Jira | — | `<TO_FILL>` | pendiente | Leo |
-| Container Registry | `taskbot-registry` | `<TO_FILL>` | pendiente | Leo |
-| Production LB | `taskbot-prod-lb` | `<TO_FILL>` | pendiente | Leo |
-| Test LB | `taskbot-test-lb` | `<TO_FILL>` | pendiente | Leo |
-| Log Group | — | `<TO_FILL>` | pendiente | Leo |
-| Notification Topic (pipelines) | — | `<TO_FILL>` | pendiente | Leo |
-| Notification Topic (Jira) | — | `<TO_FILL>` | pendiente | Leo |
-| State bucket Terraform | — | `<TO_FILL>` | pendiente | Leo |
-| Autonomous DB (existente) | (TBD) | `<TO_FILL>` | por verificar | Leo |
-| Cluster OKE | `taskbot-oke-cluster` | `<TO_FILL>` | pendiente | Lili |
-| Node Pool | `taskbot-oke-nodepool` | `<TO_FILL>` | pendiente | Lili |
-| Dynamic Group DevOps | — | `<TO_FILL>` | pendiente | Leo |
-| DevOps Project | `taskbot-devops` | `<TO_FILL>` | pendiente | Sofi |
-| Functions Application | `taskbot-functions-app` | `<TO_FILL>` | pendiente | Sofi |
-| Function Jira | `fn-jira-ticket-creator` | `<TO_FILL>` | pendiente | Sofi |
+### Tenancy y bootstrap
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Tenancy | `ocid1.tenancy.oc1..aaaaaaaave7wm7hohju22j2hrazrrvp7jgwcty25dwosrffoefpufjxbgmfq` | creado | (heredado) |
+| State bucket Terraform | `taskbot-terraform-state` (namespace `ax5o32ww5jyq`) | creado | Leo |
+
+### Compartment del proyecto
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Compartment `taskbot-compartment` | `ocid1.compartment.oc1..aaaaaaaasc7skqcllhtzaohqv2ee4c7qznox74hxo6bftrknasa232p2lloq` | creado | Leo |
+
+### Networking
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| VCN `taskbot-vcn` | `ocid1.vcn.oc1.mx-queretaro-1.amaaaaaazghwoyqapug2d5yxmqrmcl327xruyi5jdsk2djzmhbnsqxd42kzq` | creado | Leo |
+| Subnet pública | `ocid1.subnet.oc1.mx-queretaro-1.aaaaaaaah24t7t2n77yq6adg4szmozoe244mu5qpeym2blxtklqwpifocvrq` | creado | Leo |
+| Subnet privada | `ocid1.subnet.oc1.mx-queretaro-1.aaaaaaaamz6ymy22vkwxqzr6ipsygg42xcnoqdavfdh7nadazhtjaz5ghsta` | creado | Leo |
+| Internet Gateway | `ocid1.internetgateway.oc1.mx-queretaro-1.aaaaaaaarq5d3kpmkm2nw7autwer7p4gbtexd2g3grm5opvkbt2h5rzggjgq` | creado | Leo |
+| NAT Gateway | `ocid1.natgateway.oc1.mx-queretaro-1.aaaaaaaadif2dvfgt5xk6upmp6mettt26gn5ll7gaqtcfd2dnnpmwmkj5scq` | creado | Leo |
+| Service Gateway | `ocid1.servicegateway.oc1.mx-queretaro-1.aaaaaaaasepcotulw3ez3gbbs2rjezxdqrxc2bmopfxyj444siaf2peau72a` | creado | Leo |
+
+### IAM
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Dynamic Group DevOps | `ocid1.dynamicgroup.oc1..aaaaaaaao6bdgm6rvs7rzamuysa6tapyxfha4p4o7d6h32bu4reqrlsr7lzq` | creado | Leo |
+| Dynamic Group OKE | `ocid1.dynamicgroup.oc1..aaaaaaaay5gtfewvwumq33763wjm76fj6cafobwu74gh2vhkojhkuc67ob2a` | creado | Leo |
+| Dynamic Group Functions | `ocid1.dynamicgroup.oc1..aaaaaaaaqnkcp53m2mbebwcciqvrbk5ica6mahkfps7qykh2s5qo6dbh6mnq` | creado | Leo |
+| Policy DevOps | (ver consola) | creado | Leo |
+| Policy OKE | (ver consola) | creado | Leo |
+| Policy Functions | (ver consola) | creado | Leo |
+| Policy OKE service | (ver consola) | creado | Leo |
+
+### Vault y secretos
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Vault `taskbot-vault` | `<TO_FILL>` | pendiente | Leo |
+| Master Key | `<TO_FILL>` | pendiente | Leo |
+| Secret DB creds | `<TO_FILL>` | pendiente | Leo |
+| Secret wallet | `<TO_FILL>` | pendiente | Leo |
+| Secret JWT | `<TO_FILL>` | pendiente | Leo |
+| Secret OpenAI | `<TO_FILL>` | pendiente | Leo |
+| Secret Telegram | `<TO_FILL>` | pendiente | Leo |
+| Secret Jira | `<TO_FILL>` | pendiente | Leo |
+
+### Container Registry
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Repo `ai-service` | `<TO_FILL>` | pendiente | Leo |
+| Repo `auth-service` | `<TO_FILL>` | pendiente | Leo |
+| Repo `kpi-service` | `<TO_FILL>` | pendiente | Leo |
+| Repo `task-service` | `<TO_FILL>` | pendiente | Leo |
+| Repo `telegram-service` | `<TO_FILL>` | pendiente | Leo |
+| Repo `frontend` | `<TO_FILL>` | pendiente | Leo |
+
+### Load Balancers
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Production LB `taskbot-prod-lb` | `<TO_FILL>` | pendiente | Leo |
+| Test LB `taskbot-test-lb` | `<TO_FILL>` | pendiente | Leo |
+
+### Observabilidad
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Log Group | `<TO_FILL>` | pendiente | Leo |
+| Notification Topic (pipelines) | `<TO_FILL>` | pendiente | Leo |
+| Notification Topic (Jira) | `<TO_FILL>` | pendiente | Leo |
+
+### Externos y otras capas
+
+| Recurso | OCID | Status | Owner |
+|---|---|---|---|
+| Autonomous DB (existente) | `<TO_FILL>` | por verificar | Leo |
+| Cluster OKE | `<TO_FILL>` | pendiente | Lili |
+| Node Pool | `<TO_FILL>` | pendiente | Lili |
+| DevOps Project | `<TO_FILL>` | pendiente | Sofi |
+| Functions Application | `<TO_FILL>` | pendiente | Sofi |
+| Function Jira | `<TO_FILL>` | pendiente | Sofi |
 
 ---
 
 ## 4. Convención de tags OCI
-
-Todos los recursos provisionados llevan estos tags. Sin excepción. Sirven para cost tracking, limpieza al cerrar el proyecto y auditoría.
 
 | Tag | Valor | Notas |
 |---|---|---|
@@ -176,8 +224,6 @@ Todos los recursos provisionados llevan estos tags. Sin excepción. Sirven para 
 | `Owner` | `Leo` / `Lili` / `Sofi` / `Diana` | Quien gestiona el recurso |
 | `ManagedBy` | `terraform` / `helm` / `manual` | Cómo se creó |
 | `Environment` | `shared` / `vs-blue` / `vs-green` | Para recursos de Kubernetes |
-
-Recomendación: crear un Tag Namespace de OCI (`taskbot`) y definir los tags ahí para que sean obligatorios vía policy.
 
 ---
 
@@ -241,18 +287,14 @@ Espejo de la tabla 2.7 del documento de diseño. Fuente de verdad para Lili al e
 | 9 | Pruebas de rollback intencional, validación end-to-end | Todos |
 | 10 | Grabación del video del Sprint | Diana |
 
-Stand-ups diarios de 15 minutos entre los puntos de sync.
-
 ---
 
 ## 8. Limpieza pendiente antes de migrar (Diana)
 
-Antes del primer push a `taskbot-backend`, el código debe estar listo:
-
 - [ ] Eliminar `SPRING_KAFKA_BOOTSTRAP_SERVERS` y `KAFKA_BROKERCONNECT` de `.env` y `.env.example`
 - [ ] Eliminar todo código que consuma Kafka en `kpi-service`
 - [ ] Eliminar todo código que consuma Kafka en `telegram-service`
-- [ ] Verificar que `Wallet/` está en `.gitignore` y revisar el historial Git por si se subió alguna vez
+- [ ] Verificar que `Wallet/` está en `.gitignore` y revisar el historial Git
 - [ ] Verificar que `.env` está en `.gitignore` y revisar el historial Git
 - [ ] Confirmar que cada microservicio tiene su Dockerfile listo y compatible con el build de OCI
 - [ ] Confirmar que cada `application.yml` lee variables de entorno (no las hardcodea)
@@ -260,29 +302,27 @@ Antes del primer push a `taskbot-backend`, el código debe estar listo:
 
 ---
 
-## 9. Decisiones aún pendientes (a cerrar en el kick-off)
+## 9. Decisiones aún pendientes
 
-- [ ] Compartment padre: ¿root o intermediario? Si la tenancy es compartida con otros proyectos, conviene un compartment padre dedicado
 - [ ] Versión de Kubernetes para OKE (recomendado: la LTS más reciente disponible en `mx-queretaro-1`)
 - [ ] Versión y distribución de Java en el Dockerfile base (`eclipse-temurin:17-jre`, `21-jre`, otra)
-- [ ] Estrategia de tags de imágenes Docker: ¿solo SHA del commit + `latest`, o también semver?
-- [ ] Shape y tamaño del Node Pool de OKE para Sprint 3 (sugerido mínimo: 3 nodos `VM.Standard.E4.Flex` con 2 OCPU / 16 GB cada uno, uno por fault domain)
-- [ ] Confirmar OCID y región actual de la Autonomous AI Database existente
+- [ ] Estrategia de tags de imágenes Docker: SHA del commit + `latest`, o también semver
+- [ ] Shape y tamaño del Node Pool de OKE: 3 nodos `VM.Standard.E4.Flex` con 2 OCPU / 16 GB cada uno (uno por fault domain) — confirmar con Lili
+- [ ] Network plugin del cluster (VCN-native vs flannel) — propuesta: VCN-native, confirmar con Lili
+- [ ] Confirmar OCID y región de la Autonomous AI Database existente
 - [ ] Quién hace el primer push de prueba a `taskbot-backend` y cuándo (sugerido: Diana, día 4)
-- [ ] Estrategia exacta de sincronización Vault → Kubernetes Secret (External Secrets Operator vs. job manual)
+- [ ] Estrategia de sincronización Vault → Kubernetes Secret (External Secrets Operator vs job manual)
 
 ---
 
-## 10. Bloqueos cruzados (referencia rápida)
+## 10. Bloqueos cruzados
 
-| Quien bloquea | A quién | Recursos críticos que producen el bloqueo |
+| Quien bloquea | A quién | Recursos críticos |
 |---|---|---|
 | Leo | Lili, Sofi, Diana | VCN, Vault, LBs, Container Registry, DNS, dynamic group de DevOps |
 | Lili | Sofi, Diana | Cluster OKE, namespaces, Ingress, Secrets sincronizados |
 | Sofi | Diana | URLs de Code Repos, plantillas de `build_spec.yaml` |
 | Diana | (nadie) | Consumidora final |
-
-Mitigación clave: este contrato existe precisamente para que cada persona pueda trabajar contra **nombres acordados** sin esperar a que los OCIDs reales existan.
 
 ---
 
@@ -291,3 +331,4 @@ Mitigación clave: este contrato existe precisamente para que cada persona pueda
 | Fecha | Versión | Cambios | Autor |
 |---|---|---|---|
 | 2026-05-19 | 0.1 | Borrador inicial: nombres ratificables, decisiones cerradas sobre región, Terraform backend, ownership de Container Registry y Artifact Registry, mapeos y cronograma | Leo |
+| 2026-05-19 | 0.2 | Aplicado bootstrap + compartment + IAM + networking (18 recursos creados). OCIDs reales en sección 3 para: tenancy, compartment, VCN, ambas subnets, IGW, NAT GW, Service GW, los 3 dynamic groups. Pendientes restantes de la capa de Leo: Vault, Container Registry, Load Balancers, Observabilidad | Leo |
