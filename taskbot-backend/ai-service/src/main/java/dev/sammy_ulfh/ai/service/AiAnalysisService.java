@@ -14,7 +14,7 @@ import java.util.List;
 public class AiAnalysisService {
 
     @Autowired
-    private AiOpenAiService aiProviderService; // luego lo cambias a OCI
+    private AiOpenAiService aiProviderService; 
 
     public AiAnalysisResponse generateRecommendations(SprintData sprintData) {
 

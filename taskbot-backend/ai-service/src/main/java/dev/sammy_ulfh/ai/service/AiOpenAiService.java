@@ -27,7 +27,7 @@ public class AiOpenAiService {
             ChatCompletionRequest request = ChatCompletionRequest.builder()
                     .model("gpt-4") // 🔥 CAMBIO: mejor modelo
                     .messages(List.of(system, user))
-                    .maxTokens(300) // 🔥 control costo
+                    .maxTokens(1500)
                     .temperature(0.3) // 🔥 más precisión
                     .build();
 
