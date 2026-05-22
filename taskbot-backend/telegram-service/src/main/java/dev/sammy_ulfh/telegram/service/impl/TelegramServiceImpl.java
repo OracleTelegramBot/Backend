@@ -9,7 +9,6 @@ import dev.sammy_ulfh.telegram.dto.external.ProductivityResponseDTO;
 import dev.sammy_ulfh.telegram.dto.telegram.TelegramResponseDTO;
 import dev.sammy_ulfh.telegram.entity.UserSession;
 import dev.sammy_ulfh.telegram.service.TelegramService;
-import dev.sammy_ulfh.telegram.service.kafka.TelegramKafkaProducer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,22 +24,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TelegramServiceImpl implements TelegramService {
 
     private final KpiFeignClient kpiClient;
-    private final TelegramKafkaProducer telegramKafkaProducer;
     private final RestTemplate restTemplate;
-    
+
     // Auth-service URL local pointer
     @Value("${auth.service.url:http://localhost:8082}/api/v1/auth/login")
     private String authServiceUrl;
 
     @Value("${telegram.bot.token}")
     private String botToken;
-    
+
     // State machine storage
     private final Map<Long, UserSession> activeSessions = new ConcurrentHashMap<>();
 
-    public TelegramServiceImpl(KpiFeignClient kpiClient, TelegramKafkaProducer telegramKafkaProducer) {
+    public TelegramServiceImpl(KpiFeignClient kpiClient) {
         this.kpiClient = kpiClient;
-        this.telegramKafkaProducer = telegramKafkaProducer;
         this.restTemplate = new RestTemplate();
     }
 
@@ -49,7 +46,7 @@ public class TelegramServiceImpl implements TelegramService {
         if (text == null || text.trim().isEmpty()) return;
 
         UserSession session = activeSessions.get(chatId);
-        
+
         // Restart/Start logic
         if (text.trim().equalsIgnoreCase("/start") || text.trim().equalsIgnoreCase("/login")) {
             session = new UserSession();
@@ -103,27 +100,14 @@ public class TelegramServiceImpl implements TelegramService {
 
         // Logged-in Flow
         if (session.getState() != UserSession.SessionState.LOGGED_IN) {
-            return; 
+            return;
         }
 
         String[] parts = text.trim().toLowerCase().split("\\s+");
         String command = parts[0];
         String arg = parts.length > 1 ? parts[1] : null;
 
-        if (command.equals("/anuncio_urgente") || command.equals("/recordatorio")) {
-            String fullMessage = text.substring(command.length()).trim();
-            if (fullMessage.isEmpty()) {
-                sendToTelegram(chatId, "[-] Debes proveer un mensaje. Uso: " + command + " <mensaje>", null);
-            } else {
-                if (command.equals("/anuncio_urgente")) {
-                    telegramKafkaProducer.enviarAnuncioUrgente(fullMessage);
-                    sendToTelegram(chatId, "[+] Anuncio urgente enviado al equipo y persistido en BD.", null);
-                } else {
-                    telegramKafkaProducer.enviarRecordatorio(fullMessage);
-                    sendToTelegram(chatId, "[+] Recordatorio enviado al equipo y persistido en BD.", null);
-                }
-            }
-        } else if (command.equals("/sprint_duracion") || command.equals("/sprint_cumplimiento") ||
+        if (command.equals("/sprint_duracion") || command.equals("/sprint_cumplimiento") ||
                 command.equals("/ciclo_proyecto") || command.equals("/precision_usuario")) {
 
             if (arg != null) {
@@ -143,9 +127,6 @@ public class TelegramServiceImpl implements TelegramService {
                     "🔹 `/sprint_cumplimiento [id]`\n" +
                     "🔹 `/ciclo_proyecto [id]`\n" +
                     "🔹 `/precision_usuario [id]`\n\n" +
-                    "Comandos de Notificaciones por Kafka:\n" +
-                    "🔹 `/anuncio_urgente <mensaje>`\n" +
-                    "🔹 `/recordatorio <mensaje>`\n\n" +
                     "_Si omites el ID en KPIs, te mostraré un menú interactivo._";
             sendToTelegram(chatId, helpText, null);
         } else {
@@ -158,7 +139,7 @@ public class TelegramServiceImpl implements TelegramService {
     @Override
     public void handleCallbackQuery(Long chatId, String data) {
         if (data == null || !data.contains("_")) return;
-        
+
         UserSession session = activeSessions.get(chatId);
         if (session == null || session.getState() != UserSession.SessionState.LOGGED_IN) {
             sendToTelegram(chatId, "⚠️ Sessión inválida. Usa `/start` para iniciar sesión y ganar permisos.", null);
