@@ -1,0 +1,38 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd ${{ secrets.VPS_PROJECT_PATH }}/taskbot-backend
+            git pull origin main
+            docker-compose down
+            cd ./ai-service
+            ./mvnw clean package
+            cd ../auth-service
+            ./mvnw clean package
+            cd ../kpi-service
+            ./mvnw clean package
+            cd ../task-service
+            ./mvnw clean package
+            cd ../telegram-service
+            ./mvnw clean package
+            cd ..
+            docker-compose up -d --build
+            cd ../admindeproyectos
+            npm install
+            npm run build
+            mv ./dist /var/www/html
