@@ -22,30 +22,28 @@ jobs:
             # 1. Navegar al directorio del backend
             cd ${{ secrets.VPS_PROJECT_PATH }}/Backend
 
-            # 2. Actualizar el código
-            sudo git pull origin main
+            # 2. Sincronizar el codigo al estado exacto de origin/main
+            #    (fetch + reset evita merge commits y el error de identidad de git)
+            sudo git fetch origin main
+            sudo git reset --hard origin/main
 
             # 3. Tumbar la infraestructura actual
             sudo docker-compose down
 
-            ( cd ai-service       && sudo ./mvnw clean package -DskipTests )
-            ( cd ../auth-service     && sudo ./mvnw clean package -DskipTests )
-            ( cd ../kpi-service      && sudo ./mvnw clean package -DskipTests )
-            ( cd ../task-service     && sudo ./mvnw clean package -DskipTests )
-            ( cd ../telegram-service && sudo ./mvnw clean package -DskipTests )
-
             # 4. Reconstruir y levantar los contenedores backend
             #    Los Dockerfiles compilan el jar internamente (multi-stage),
-            #    por eso aquí NO se ejecuta Maven.
+            #    por eso aqui NO se ejecuta Maven.
             sudo docker-compose up -d --build
 
             # 5. Compilar y desplegar el Frontend (admindeproyectos)
-            #    OJO: confirma esta ruta. Si el frontend esta en otro nivel,
-            #    ajustala (p.ej. .../Frontend/admindeproyectos).
+            #    OJO: confirma esta ruta si el frontend esta en otro nivel.
             cd ${{ secrets.VPS_PROJECT_PATH }}/admindeproyectos
-            sudo git pull origin main
+            sudo git fetch origin main
+            sudo git reset --hard origin/main
             sudo npm install
             sudo npm run build
 
             # 6. Desplegar a Apache
-            sudo mv ./dist /var/www/html/
+            #    Limpiar destino y copiar el contenido del build.
+            sudo rm -rf /var/www/html/*
+            sudo cp -r ./dist/* /var/www/html/
