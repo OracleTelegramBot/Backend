@@ -1,4 +1,4 @@
-# Deployment — TaskBot Backendd
+# Deployment — TaskBot Backend
 
 ## Arquitectura de despliegue
 
