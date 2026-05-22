@@ -19,31 +19,38 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script_stop: true
           script: |
-            # 1. Navegar al directorio del backend
+            # 1. Ir a la raiz del repo y sincronizar al estado de origin/main
             cd ${{ secrets.VPS_PROJECT_PATH }}/Backend
-
-            # 2. Sincronizar el codigo al estado exacto de origin/main
-            #    (fetch + reset evita merge commits y el error de identidad de git)
             sudo git fetch origin main
             sudo git reset --hard origin/main
+
+            # 2. Entrar a la carpeta del backend (donde vive docker-compose.yml)
+            cd taskbot-backend
 
             # 3. Tumbar la infraestructura actual
             sudo docker-compose down
 
-            # 4. Reconstruir y levantar los contenedores backend
-            #    Los Dockerfiles compilan el jar internamente (multi-stage),
-            #    por eso aqui NO se ejecuta Maven.
+            # 4. Compilar los microservicios (los Dockerfiles esperan el jar
+            #    ya construido en target/, por eso SI hay que correr Maven).
+            #    Cada compilacion va en su propio subshell ( ... ) para que la
+            #    ruta no se corrompa si una falla. Con script_stop: true,
+            #    cualquier fallo detiene el pipeline.
+            ( cd ai-service       && sudo ./mvnw clean package -DskipTests )
+            ( cd auth-service     && sudo ./mvnw clean package -DskipTests )
+            ( cd kpi-service      && sudo ./mvnw clean package -DskipTests )
+            ( cd task-service     && sudo ./mvnw clean package -DskipTests )
+            ( cd telegram-service && sudo ./mvnw clean package -DskipTests )
+
+            # 5. Reconstruir y levantar los contenedores backend
             sudo docker-compose up -d --build
 
-            # 5. Compilar y desplegar el Frontend (admindeproyectos)
-            #    OJO: confirma esta ruta si el frontend esta en otro nivel.
+            # 6. Compilar y desplegar el Frontend (admindeproyectos)
             cd ${{ secrets.VPS_PROJECT_PATH }}/admindeproyectos
             sudo git fetch origin main
             sudo git reset --hard origin/main
             sudo npm install
             sudo npm run build
 
-            # 6. Desplegar a Apache
-            #    Limpiar destino y copiar el contenido del build.
+            # 7. Desplegar a Apache
             sudo rm -rf /var/www/html/*
             sudo cp -r ./dist/* /var/www/html/
