@@ -39,6 +39,7 @@ jobs:
             
             # 6. Compilar y desplegar el Frontend (admindeproyectos)
             cd ../admindeproyectos
+            sudo git pull origin main
             sudo npm install
             sudo npm run build
             
