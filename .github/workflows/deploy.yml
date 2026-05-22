@@ -8,40 +8,55 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Si tus secrets son de Environment (no Repository), descomenta la línea siguiente
+    # y pon el nombre exacto del environment:
+    # environment: production
 
     steps:
+      # Paso temporal de diagnóstico. Imprime true/false sin filtrar valores.
+      # Bórralo una vez confirmes que todos salen "true".
+      - name: Check secrets presence
+        run: |
+          echo "HOST set: ${{ secrets.VPS_HOST != '' }}"
+          echo "USER set: ${{ secrets.VPS_USER != '' }}"
+          echo "KEY  set: ${{ secrets.VPS_SSH_KEY != '' }}"
+          echo "PATH set: ${{ secrets.VPS_PROJECT_PATH != '' }}"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
           script: |
             # 1. Navegar al directorio del backend
             cd ${{ secrets.VPS_PROJECT_PATH }}/taskbot-backend
-            
+
             # 2. Actualizar el código
             sudo git pull origin main
-            
+
             # 3. Tumbar la infraestructura actual
             sudo docker-compose down
-            
+
             # 4. Compilar los microservicios de Spring Boot (Java)
-            # Agrupamos los comandos con && para que si uno falla, se detenga el pipeline
-            cd ai-service && sudo ./mvnw clean package && cd ..
-            cd auth-service && sudo ./mvnw clean package && cd ..
-            cd kpi-service && sudo ./mvnw clean package && cd ..
-            cd task-service && sudo ./mvnw clean package && cd ..
-            cd telegram-service && sudo ./mvnw clean package && cd ..
-            
+            #    Cada compilación va en su propio subshell ( ... ) para que la
+            #    ruta no se corrompa si un mvnw falla. Con script_stop: true,
+            #    cualquier fallo detiene el pipeline.
+            ( cd ai-service       && sudo ./mvnw clean package -DskipTests )
+            ( cd auth-service     && sudo ./mvnw clean package -DskipTests )
+            ( cd kpi-service      && sudo ./mvnw clean package -DskipTests )
+            ( cd task-service     && sudo ./mvnw clean package -DskipTests )
+            ( cd telegram-service && sudo ./mvnw clean package -DskipTests )
+
             # 5. Reconstruir y levantar los contenedores backend
             sudo docker-compose up -d --build
-            
+
             # 6. Compilar y desplegar el Frontend (admindeproyectos)
-            cd ../admindeproyectos
+            cd ${{ secrets.VPS_PROJECT_PATH }}/admindeproyectos
             sudo git pull origin main
             sudo npm install
             sudo npm run build
-            
-            # 7. Desplegar a Apache (usar cp en lugar de mv)
-            sudo cp -r ./dist/* /var/www/html/
+
+            # 7. Desplegar a Apache
+            sudo mv ./dist /var/www/html/
