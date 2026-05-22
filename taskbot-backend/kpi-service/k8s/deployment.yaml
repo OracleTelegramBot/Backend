@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kpi-service
+  namespace: vs-blue
+  labels:
+    app: kpi-service
+    project: taskbot
+    sprint: sprint-3
+    environment: vs-blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kpi-service
+  template:
+    metadata:
+      labels:
+        app: kpi-service
+        project: taskbot
+        environment: vs-blue
+    spec:
+      serviceAccountName: devops-deployer
+      containers:
+        - name: kpi-service
+          image: mx-queretaro-1.ocir.io/ax5o32ww5jyq/taskbot-registry/kpi-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: taskbot-config
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: autonomous-db-credentials
+                  key: DB_URL
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: autonomous-db-credentials
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: autonomous-db-credentials
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_SECRET
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: openai-credentials
+                  key: OPENAI_API_KEY
+                  optional: true
+            - name: TELEGRAM_BOT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: telegram-credentials
+                  key: TELEGRAM_BOT_TOKEN
+                  optional: true
+          volumeMounts:
+            - name: oracle-wallet-vol
+              mountPath: /app/Wallet
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: oracle-wallet-vol
+          secret:
+            secretName: oracle-wallet
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kpi-service
+  namespace: vs-blue
+  labels:
+    app: kpi-service
+    project: taskbot
+    sprint: sprint-3
+    environment: vs-blue
+spec:
+  type: ClusterIP
+  selector:
+    app: kpi-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

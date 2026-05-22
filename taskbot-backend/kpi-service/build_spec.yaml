@@ -1,0 +1,23 @@
+version: 0.1
+component: build
+timeoutInSeconds: 600
+shell: bash
+env:
+  variables:
+    SERVICE_NAME: kpi-service
+    IMAGE_REPO: mx-queretaro-1.ocir.io/ax5o32ww5jyq/taskbot-registry/kpi-service
+steps:
+  - type: Command
+    name: Build jar
+    command: mvn clean package -DskipTests
+  - type: Command
+    name: Docker build
+    command: |
+      docker build -t $IMAGE_REPO:$OCI_COMMIT_HASH -t $IMAGE_REPO:latest .
+  - type: Command
+    name: Docker push
+    command: docker push $IMAGE_REPO --all-tags
+outputArtifacts:
+  - name: manifest
+    type: BINARY
+    location: k8s/deployment.yaml
