@@ -8,9 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Si tus secrets son de Environment (no Repository), descomenta la línea siguiente
-    # y pon el nombre exacto del environment:
-    # environment: production
+    environment: production
 
     steps:
       # Paso temporal de diagnóstico. Imprime true/false sin filtrar valores.
@@ -39,24 +37,16 @@ jobs:
             # 3. Tumbar la infraestructura actual
             sudo docker-compose down
 
-            # 4. Compilar los microservicios de Spring Boot (Java)
-            #    Cada compilación va en su propio subshell ( ... ) para que la
-            #    ruta no se corrompa si un mvnw falla. Con script_stop: true,
-            #    cualquier fallo detiene el pipeline.
-            ( cd ai-service       && sudo ./mvnw clean package -DskipTests )
-            ( cd auth-service     && sudo ./mvnw clean package -DskipTests )
-            ( cd kpi-service      && sudo ./mvnw clean package -DskipTests )
-            ( cd task-service     && sudo ./mvnw clean package -DskipTests )
-            ( cd telegram-service && sudo ./mvnw clean package -DskipTests )
-
-            # 5. Reconstruir y levantar los contenedores backend
+            # 4. Reconstruir y levantar los contenedores backend
+            #    Los Dockerfiles compilan el jar internamente (multi-stage),
+            #    por eso aquí NO se ejecuta Maven.
             sudo docker-compose up -d --build
 
-            # 6. Compilar y desplegar el Frontend (admindeproyectos)
+            # 5. Compilar y desplegar el Frontend (admindeproyectos)
             cd ${{ secrets.VPS_PROJECT_PATH }}/admindeproyectos
             sudo git pull origin main
             sudo npm install
             sudo npm run build
 
-            # 7. Desplegar a Apache
-            sudo mv ./dist /var/www/html/
+            # 6. Desplegar a Apache
+            sudo cp -r ./dist/* /var/www/html/
