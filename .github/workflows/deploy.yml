@@ -11,15 +11,6 @@ jobs:
     environment: production
 
     steps:
-      # Paso temporal de diagnóstico. Imprime true/false sin filtrar valores.
-      # Bórralo una vez confirmes que todos salen "true".
-      - name: Check secrets presence
-        run: |
-          echo "HOST set: ${{ secrets.VPS_HOST != '' }}"
-          echo "USER set: ${{ secrets.VPS_USER != '' }}"
-          echo "KEY  set: ${{ secrets.VPS_SSH_KEY != '' }}"
-          echo "PATH set: ${{ secrets.VPS_PROJECT_PATH != '' }}"
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -29,7 +20,7 @@ jobs:
           script_stop: true
           script: |
             # 1. Navegar al directorio del backend
-            cd ${{ secrets.VPS_PROJECT_PATH }}/taskbot-backend
+            cd ${{ secrets.VPS_PROJECT_PATH }}/Backend
 
             # 2. Actualizar el código
             sudo git pull origin main
@@ -43,10 +34,12 @@ jobs:
             sudo docker-compose up -d --build
 
             # 5. Compilar y desplegar el Frontend (admindeproyectos)
+            #    OJO: confirma esta ruta. Si el frontend esta en otro nivel,
+            #    ajustala (p.ej. .../Frontend/admindeproyectos).
             cd ${{ secrets.VPS_PROJECT_PATH }}/admindeproyectos
             sudo git pull origin main
             sudo npm install
             sudo npm run build
 
             # 6. Desplegar a Apache
-            sudo cp -r ./dist/* /var/www/html/
+            sudo mv ./dist /var/www/html/
