@@ -28,6 +28,8 @@ jobs:
             cd taskbot-backend
 
             # 3. Tumbar la infraestructura actual
+            sudo docker-compose down
+
 
             # 4. Compilar los microservicios (los Dockerfiles esperan el jar
             #    ya construido en target/, por eso SI hay que correr Maven).
@@ -39,8 +41,6 @@ jobs:
             ( cd kpi-service      && sudo ./mvnw clean package -DskipTests )
             ( cd task-service     && sudo ./mvnw clean package -DskipTests )
             ( cd telegram-service && sudo ./mvnw clean package -DskipTests )
-
-            sudo docker-compose down
 
             # 5. Reconstruir y levantar los contenedores backend
             sudo docker-compose up -d --build
