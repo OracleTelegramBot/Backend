@@ -28,6 +28,12 @@ jobs:
             # 3. Tumbar la infraestructura actual
             sudo docker-compose down
 
+            ( cd ai-service       && sudo ./mvnw clean package -DskipTests )
+            ( cd ../auth-service     && sudo ./mvnw clean package -DskipTests )
+            ( cd ../kpi-service      && sudo ./mvnw clean package -DskipTests )
+            ( cd ../task-service     && sudo ./mvnw clean package -DskipTests )
+            ( cd ../telegram-service && sudo ./mvnw clean package -DskipTests )
+
             # 4. Reconstruir y levantar los contenedores backend
             #    Los Dockerfiles compilan el jar internamente (multi-stage),
             #    por eso aquí NO se ejecuta Maven.
