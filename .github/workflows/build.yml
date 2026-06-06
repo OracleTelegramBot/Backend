@@ -1,0 +1,90 @@
+# =========================================================
+# Build & Push de imágenes de los 5 microservicios a GHCR.
+# - Trigger: push a main, o manual desde GitHub UI
+# - Matriz: 5 builds en paralelo (uno por servicio)
+# - Tags: <sha> (immutable, lo usa el deploy) + latest (conveniencia)
+# - Cache: layers cacheados en GitHub Actions (builds incrementales rápidos)
+# =========================================================
+name: Build & Push Backend
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docker-compose.yml'
+      - '.gitignore'
+  workflow_dispatch:        # permite trigger manual desde GitHub UI
+
+permissions:
+  contents: read
+  packages: write           # necesario para push a GHCR
+
+env:
+  IMAGE_PREFIX: ghcr.io/oracletelegrambot/taskbot
+
+jobs:
+  build:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false      # si un servicio falla, los otros siguen
+      matrix:
+        service:
+          - auth-service
+          - kpi-service
+          - telegram-service
+          - ai-service
+          - task-service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          file: ./${{ matrix.service }}/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+  summary:
+    name: Build summary
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Print built images
+        run: |
+          echo "## Imágenes construidas" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit SHA**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Para deployar:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "IMAGE_TAG=${{ github.sha }} ./deploy.sh" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Imágenes" >> $GITHUB_STEP_SUMMARY
+          for service in auth-service kpi-service telegram-service ai-service task-service; do
+            echo "- \`ghcr.io/oracletelegrambot/taskbot-${service}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          done

@@ -1,13 +1,28 @@
-FROM eclipse-temurin:17-jre-alpine
+# =========================================================
+# Multi-stage build — ai-service
+# Java 17 LTS, Maven builder, JRE Alpine runtime (~180 MB final)
+# =========================================================
 
-# Establecer el directorio de trabajo
+# ===== Stage 1: builder =====
+FROM maven:3-eclipse-temurin-17-alpine AS builder
+WORKDIR /build
+
+# Layer caching: pom.xml primero para cachear deps cuando solo cambia src/
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+RUN mvn package -DskipTests -B
+
+# ===== Stage 2: runtime =====
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Copiar el JAR del proyecto
-COPY target/*.jar app.jar
+# Wildcard matchea .jar (auth, ai, telegram, task) y .war (kpi)
+COPY --from=builder /build/target/*.[jw]ar app.archive
 
-# Exponer el puerto
+# JVM tuning para containers — respeta los memory limits que K8s asigne
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:+UseContainerSupport"
+
 EXPOSE 8083
-
-# Comando para ejecutar la aplicación
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.archive"]
