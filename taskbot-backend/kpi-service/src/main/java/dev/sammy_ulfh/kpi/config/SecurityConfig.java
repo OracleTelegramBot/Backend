@@ -41,6 +41,8 @@ public class SecurityConfig {
                 // 3. Rutas públicas
                 .requestMatchers(
                     "/api/v1/kpi/public/**", 
+                    "/swagger-ui-kpi.html",
+                    "/swagger-ui-kpi/**",
                     "/swagger-ui.html", 
                     "/swagger-ui/**", 
                     "/v3/api-docs/**",

@@ -27,6 +27,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         // Swagger UI / OpenAPI / Webjars / Actuator
                         .requestMatchers(
+                                "/swagger-ui-auth.html",
+                                "/swagger-ui-auth/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
