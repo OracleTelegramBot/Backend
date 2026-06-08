@@ -1,4 +1,4 @@
-package dev.sammy_ulfh.kpi.config;
+package dev.sammy_ulfh.authentication.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
