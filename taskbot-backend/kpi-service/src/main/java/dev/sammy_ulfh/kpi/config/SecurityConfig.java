@@ -48,6 +48,8 @@ public class SecurityConfig {
                     "/v3/api-docs/**",
                     "/webjars/**",
                     "/actuator/health/**",
+                    "/actuator/health/liveness",
+                    "/actuator/health/readiness",
                     "/ws/**", 
                     "/actuator/**", 
                     "/error"
