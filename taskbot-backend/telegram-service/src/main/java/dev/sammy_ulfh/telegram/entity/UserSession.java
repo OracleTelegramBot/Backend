@@ -1,5 +1,7 @@
 package dev.sammy_ulfh.telegram.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +59,7 @@ public class UserSession implements Serializable {
     public String getTempValue(String key) { return tempData.get(key); }
     public void clearTempData() { tempData.clear(); }
 
+    @JsonIgnore
     public boolean isInCreationFlow() {
         return state != null && state.name().startsWith("CREATING_");
     }

@@ -59,8 +59,15 @@ public class TelegramServiceImpl implements TelegramService {
         UserSession session;
         try {
             session = sessionRepository.get(chatId);
+        } catch (org.springframework.data.redis.RedisConnectionFailureException e) {
+            System.err.println("[WARN] Redis no disponible para chatId=" + chatId + ": " + e.getMessage());
+            session = null;
+        } catch (org.springframework.data.redis.serializer.SerializationException e) {
+            System.err.println("[ERROR] Sesión corrupta para chatId=" + chatId + ", borrando. Error: " + e.getMessage());
+            sessionRepository.delete(chatId);
+            session = null;
         } catch (Exception e) {
-            System.err.println("Redis no disponible para chatId=" + chatId + ": " + e.getMessage());
+            System.err.println("[ERROR] Error inesperado al leer sesión para chatId=" + chatId + ": " + e.getMessage());
             session = null;
         }
 
@@ -115,7 +122,12 @@ public class TelegramServiceImpl implements TelegramService {
         UserSession session;
         try {
             session = sessionRepository.get(chatId);
+        } catch (org.springframework.data.redis.serializer.SerializationException e) {
+            System.err.println("[ERROR] Sesión corrupta en callback para chatId=" + chatId + ", borrando. Error: " + e.getMessage());
+            sessionRepository.delete(chatId);
+            session = null;
         } catch (Exception e) {
+            System.err.println("[ERROR] Error al leer sesión en callback para chatId=" + chatId + ": " + e.getMessage());
             session = null;
         }
 
