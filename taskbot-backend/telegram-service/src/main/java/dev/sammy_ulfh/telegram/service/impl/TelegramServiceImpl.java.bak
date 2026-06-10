@@ -136,23 +136,12 @@ public class TelegramServiceImpl implements TelegramService {
             return;
         }
 
-        
         int lastIndex = data.lastIndexOf("_");
         if (lastIndex > 0) {
             String command = data.substring(0, lastIndex);
             try {
                 Long id = Long.parseLong(data.substring(lastIndex + 1));
-                if (command.startsWith("SET_")) {
-                    handleCreationFlow(chatId, String.valueOf(id), session);
-                } else if (command.equals("CMD_SPRINTS")) {
-                    handleSprints(chatId, new String[]{"/sprints", String.valueOf(id)}, session);
-                } else if (command.equals("CMD_TSPRINT")) {
-                    handleTareasSprint(chatId, new String[]{"/tareas_sprint", String.valueOf(id)}, session);
-                } else if (command.equals("CMD_TUSER")) {
-                    handleTareasUsuario(chatId, new String[]{"/tareas_usuario", String.valueOf(id)}, session);
-                } else {
-                    calcularYEnviarKpi(chatId, command, id, session.getJwtToken());
-                }
+                calcularYEnviarKpi(chatId, command, id, session.getJwtToken());
             } catch (NumberFormatException e) {
                 sendToTelegram(chatId, "[-] Error procesando el ID desde el botón.", null);
             }
@@ -201,16 +190,16 @@ public class TelegramServiceImpl implements TelegramService {
                 sessionRepository.save(chatId, session);
                 sendToTelegram(chatId, "📋 *Crear Sprint* — Paso 1/4\nIntroduce el *nombre* del sprint:", null);
             }
-            case "/sprints" -> handleSprints(chatId, parts, session);
+            case "/sprints" -> handleSprints(chatId, parts);
             case "/crear_tarea" -> {
                 session.setState(UserSession.SessionState.CREATING_TAREA_TITULO);
                 sessionRepository.save(chatId, session);
                 sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 1/8\nIntroduce el *título* de la tarea:", null);
             }
-            case "/tareas_sprint" -> handleTareasSprint(chatId, parts, session);
-            case "/tareas_usuario" -> handleTareasUsuario(chatId, parts, session);
-            case "/asignar_tarea" -> handleAsignarTarea(chatId, parts, session);
-            case "/estado_tarea" -> handleEstadoTarea(chatId, parts, session);
+            case "/tareas_sprint" -> handleTareasSprint(chatId, parts);
+            case "/tareas_usuario" -> handleTareasUsuario(chatId, parts);
+            case "/asignar_tarea" -> handleAsignarTarea(chatId, parts);
+            case "/estado_tarea" -> handleEstadoTarea(chatId, parts);
             case "/cancelar" -> sendToTelegram(chatId, "No hay ninguna operación activa para cancelar.", null);
             case "/sprint_duracion", "/sprint_cumplimiento", "/ciclo_proyecto", "/precision_usuario" ->
                 handleKpiCommand(chatId, command, parts, session);
@@ -221,9 +210,9 @@ public class TelegramServiceImpl implements TelegramService {
 
     // ─── Sprint commands ─────────────────────────────────────────────────────────
 
-    private void handleSprints(Long chatId, String[] parts, UserSession session) {
+    private void handleSprints(Long chatId, String[] parts) {
         if (parts.length < 2) {
-            enviarMenuGeneral(chatId, "CMD_SPRINTS", session.getJwtToken(), "el Proyecto", kpiClient.getProyectosActivos("Bearer " + session.getJwtToken()));
+            sendToTelegram(chatId, "[-] Uso: `/sprints <idProyecto>`", null);
             return;
         }
         try {
@@ -250,9 +239,9 @@ public class TelegramServiceImpl implements TelegramService {
 
     // ─── Task commands ───────────────────────────────────────────────────────────
 
-    private void handleTareasSprint(Long chatId, String[] parts, UserSession session) {
+    private void handleTareasSprint(Long chatId, String[] parts) {
         if (parts.length < 2) {
-            enviarMenuGeneral(chatId, "CMD_TSPRINT", session.getJwtToken(), "el Sprint", kpiClient.getSprintsActivos("Bearer " + session.getJwtToken()));
+            sendToTelegram(chatId, "[-] Uso: `/tareas_sprint <idSprint>`", null);
             return;
         }
         try {
@@ -266,9 +255,9 @@ public class TelegramServiceImpl implements TelegramService {
         }
     }
 
-    private void handleTareasUsuario(Long chatId, String[] parts, UserSession session) {
+    private void handleTareasUsuario(Long chatId, String[] parts) {
         if (parts.length < 2) {
-            enviarMenuGeneral(chatId, "CMD_TUSER", session.getJwtToken(), "el Usuario", kpiClient.getUsuariosActivos("Bearer " + session.getJwtToken()));
+            sendToTelegram(chatId, "[-] Uso: `/tareas_usuario <idUsuario>`", null);
             return;
         }
         try {
@@ -282,11 +271,9 @@ public class TelegramServiceImpl implements TelegramService {
         }
     }
 
-    private void handleAsignarTarea(Long chatId, String[] parts, UserSession session) {
+    private void handleAsignarTarea(Long chatId, String[] parts) {
         if (parts.length < 3) {
-            session.setState(UserSession.SessionState.AWAITING_ASIGNAR_TAREA);
-            sessionRepository.save(chatId, session);
-            sendToTelegram(chatId, "✅ *Asignar Tarea*\\nIntroduce el *ID de la tarea* a asignar:", null);
+            sendToTelegram(chatId, "[-] Uso: `/asignar_tarea <idTarea> <idUsuario>`", null);
             return;
         }
         try {
@@ -301,7 +288,7 @@ public class TelegramServiceImpl implements TelegramService {
         }
     }
 
-    private void handleEstadoTarea(Long chatId, String[] parts, UserSession session) {
+    private void handleEstadoTarea(Long chatId, String[] parts) {
         if (parts.length < 3) {
             sendToTelegram(chatId, "[-] Uso: `/estado_tarea <idTarea> <idEstado>`\n_Estados: 1=TODO, 2=EN PROGRESO, 3=COMPLETADA_", null);
             return;
@@ -353,13 +340,7 @@ public class TelegramServiceImpl implements TelegramService {
                 session.setTempValue("sprint_fecha_fin", val.equals("-") ? null : val);
                 session.setState(UserSession.SessionState.CREATING_SPRINT_PROYECTO);
                 sessionRepository.save(chatId, session);
-                try {
-                    List<ActiveResourceDTO> proyectos = kpiClient.getProyectosActivos("Bearer " + session.getJwtToken());
-                    Map<String, Object> replyMarkup = crearTecladoInline(proyectos, "SET_PROYECTO");
-                    sendToTelegram(chatId, "📋 *Crear Sprint* — Paso 4/4\nSelecciona el *proyecto* al que pertenece:", replyMarkup);
-                } catch(Exception e) {
-                    sendToTelegram(chatId, "📋 *Crear Sprint* — Paso 4/4\n*ID del proyecto* al que pertenece:", null);
-                }
+                sendToTelegram(chatId, "📋 *Crear Sprint* — Paso 4/4\n*ID del proyecto* al que pertenece:", null);
             }
             case CREATING_SPRINT_PROYECTO -> {
                 try {
@@ -419,13 +400,7 @@ public class TelegramServiceImpl implements TelegramService {
                     session.setTempValue("tarea_tiempo_estimado", String.valueOf(horas));
                     session.setState(UserSession.SessionState.CREATING_TAREA_PROYECTO);
                     sessionRepository.save(chatId, session);
-                    try {
-                        List<ActiveResourceDTO> proyectos = kpiClient.getProyectosActivos("Bearer " + session.getJwtToken());
-                        Map<String, Object> replyMarkup = crearTecladoInline(proyectos, "SET_PROYECTO");
-                        sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 5/8\nSelecciona el *proyecto*:", replyMarkup);
-                    } catch(Exception ex) {
-                        sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 5/8\n*ID del proyecto*:", null);
-                    }
+                    sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 5/8\n*ID del proyecto*:", null);
                 } catch (NumberFormatException e) {
                     sendToTelegram(chatId, "[-] Introduce un número entero mayor que 0:", null);
                 }
@@ -436,13 +411,7 @@ public class TelegramServiceImpl implements TelegramService {
                     session.setTempValue("tarea_proyecto", text.trim());
                     session.setState(UserSession.SessionState.CREATING_TAREA_SPRINT);
                     sessionRepository.save(chatId, session);
-                    try {
-                        List<ActiveResourceDTO> sprints = kpiClient.getSprintsActivos("Bearer " + session.getJwtToken());
-                        Map<String, Object> replyMarkup = crearTecladoInline(sprints, "SET_SPRINT");
-                        sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 6/8\nSelecciona el *sprint* (o escribe '-' para omitir):", replyMarkup);
-                    } catch(Exception ex) {
-                        sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 6/8\n*ID del sprint* (o '-' para omitir):", null);
-                    }
+                    sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 6/8\n*ID del sprint* (o '-' para no asignar a ningún sprint):", null);
                 } catch (NumberFormatException e) {
                     sendToTelegram(chatId, "[-] El ID debe ser un número. Intenta de nuevo:", null);
                 }
@@ -460,14 +429,7 @@ public class TelegramServiceImpl implements TelegramService {
                 session.setTempValue("tarea_sprint", val.equals("-") ? null : val);
                 session.setState(UserSession.SessionState.CREATING_TAREA_PRIORIDAD);
                 sessionRepository.save(chatId, session);
-                
-                List<ActiveResourceDTO> prioridades = new ArrayList<>();
-                prioridades.add(new ActiveResourceDTO(1L, "Baja"));
-                prioridades.add(new ActiveResourceDTO(2L, "Media"));
-                prioridades.add(new ActiveResourceDTO(3L, "Alta"));
-                Map<String, Object> replyMarkup = crearTecladoInline(prioridades, "SET_PRIORIDAD");
-                sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 7/8\nSelecciona la *prioridad*:", replyMarkup);
-
+                sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 7/8\n*Prioridad* (1=Baja, 2=Media, 3=Alta):", null);
             }
             case CREATING_TAREA_PRIORIDAD -> {
                 try {
@@ -529,84 +491,6 @@ public class TelegramServiceImpl implements TelegramService {
                 }
             }
 
-            
-            // INTERACTIVE COMMANDS
-            case AWAITING_ASIGNAR_TAREA -> {
-                try {
-                    Long tareaId = Long.parseLong(text.trim());
-                    session.setTempValue("asignar_tarea_id", String.valueOf(tareaId));
-                    session.setState(UserSession.SessionState.AWAITING_ASIGNAR_USUARIO);
-                    sessionRepository.save(chatId, session);
-                    
-                    try {
-                        List<ActiveResourceDTO> usuarios = kpiClient.getUsuariosActivos("Bearer " + session.getJwtToken());
-                        Map<String, Object> replyMarkup = crearTecladoInline(usuarios, "SET_USUARIO");
-                        sendToTelegram(chatId, "✅ *Asignar Tarea*\\nSelecciona el *usuario* a asignar:", replyMarkup);
-                    } catch(Exception ex) {
-                        sendToTelegram(chatId, "✅ *Asignar Tarea*\\nIntroduce el *ID del usuario*:", null);
-                    }
-                } catch(NumberFormatException e) {
-                    sendToTelegram(chatId, "[-] Introduce un ID numérico:", null);
-                }
-            }
-            case AWAITING_ASIGNAR_USUARIO -> {
-                try {
-                    Long userId = Long.parseLong(text.trim());
-                    Long tareaId = Long.parseLong(session.getTempValue("asignar_tarea_id"));
-                    
-                    taskClient.assignTask(tareaId, userId);
-                    sendToTelegram(chatId, "[+] Tarea #" + tareaId + " asignada correctamente al usuario #" + userId + ".", null);
-                    
-                    session.setState(UserSession.SessionState.LOGGED_IN);
-                    session.clearTempData();
-                    sessionRepository.save(chatId, session);
-                } catch(NumberFormatException e) {
-                    sendToTelegram(chatId, "[-] Introduce un ID numérico:", null);
-                } catch(Exception e) {
-                    session.setState(UserSession.SessionState.LOGGED_IN);
-                    session.clearTempData();
-                    sessionRepository.save(chatId, session);
-                    sendToTelegram(chatId, "[-] Error al asignar la tarea: " + e.getMessage(), null);
-                }
-            }
-            case AWAITING_ESTADO_TAREA -> {
-                try {
-                    Long tareaId = Long.parseLong(text.trim());
-                    session.setTempValue("estado_tarea_id", String.valueOf(tareaId));
-                    session.setState(UserSession.SessionState.AWAITING_ESTADO_NUEVO);
-                    sessionRepository.save(chatId, session);
-                    
-                    List<ActiveResourceDTO> estados = new ArrayList<>();
-                    estados.add(new ActiveResourceDTO(1L, "TODO"));
-                    estados.add(new ActiveResourceDTO(2L, "EN PROGRESO"));
-                    estados.add(new ActiveResourceDTO(3L, "COMPLETADA"));
-                    Map<String, Object> replyMarkup = crearTecladoInline(estados, "SET_ESTADO");
-                    
-                    sendToTelegram(chatId, "✅ *Actualizar Estado*\\nSelecciona el *nuevo estado*:", replyMarkup);
-                } catch(NumberFormatException e) {
-                    sendToTelegram(chatId, "[-] Introduce un ID numérico:", null);
-                }
-            }
-            case AWAITING_ESTADO_NUEVO -> {
-                try {
-                    Long estadoId = Long.parseLong(text.trim());
-                    Long tareaId = Long.parseLong(session.getTempValue("estado_tarea_id"));
-                    
-                    TaskDTO tarea = taskClient.updateTaskStatus(tareaId, estadoId);
-                    sendToTelegram(chatId, "[+] Tarea #" + tarea.getIdTarea() + " *" + tarea.getTitulo() + "* actualizada a *" + estadoLabel(estadoId) + "*.", null);
-                    
-                    session.setState(UserSession.SessionState.LOGGED_IN);
-                    session.clearTempData();
-                    sessionRepository.save(chatId, session);
-                } catch(NumberFormatException e) {
-                    sendToTelegram(chatId, "[-] Introduce un ID numérico:", null);
-                } catch(Exception e) {
-                    session.setState(UserSession.SessionState.LOGGED_IN);
-                    session.clearTempData();
-                    sessionRepository.save(chatId, session);
-                    sendToTelegram(chatId, "[-] Error al actualizar el estado: " + e.getMessage(), null);
-                }
-            }
             default -> sendToTelegram(chatId, "[!] Estado inesperado. Usa `/cancelar` para reiniciar.", null);
         }
     }
@@ -691,20 +575,6 @@ public class TelegramServiceImpl implements TelegramService {
     }
 
     // ─── Help ────────────────────────────────────────────────────────────────────
-
-    
-    private void enviarMenuGeneral(Long chatId, String command, String jwtToken, String tipoRecurso, List<ActiveResourceDTO> items) {
-        try {
-            if (items == null || items.isEmpty()) {
-                sendToTelegram(chatId, "[-] No hay registros activos disponibles en la base de datos.", null);
-                return;
-            }
-            Map<String, Object> replyMarkup = crearTecladoInline(items, command);
-            sendToTelegram(chatId, "Selecciona " + tipoRecurso + " para continuar:", replyMarkup);
-        } catch (Exception e) {
-            sendToTelegram(chatId, "[!] Error al obtener lista de registros.", null);
-        }
-    }
 
     private void sendHelp(Long chatId, UserSession session) {
         String helpText =

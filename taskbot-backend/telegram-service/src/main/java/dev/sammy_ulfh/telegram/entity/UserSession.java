@@ -27,7 +27,12 @@ public class UserSession implements Serializable {
         CREATING_TAREA_PROYECTO,
         CREATING_TAREA_SPRINT,
         CREATING_TAREA_PRIORIDAD,
-        CREATING_TAREA_COMPLEJIDAD
+        CREATING_TAREA_COMPLEJIDAD,
+        // Interactive flows
+        AWAITING_ASIGNAR_TAREA,
+        AWAITING_ASIGNAR_USUARIO,
+        AWAITING_ESTADO_TAREA,
+        AWAITING_ESTADO_NUEVO
     }
 
     private SessionState state;
@@ -61,6 +66,6 @@ public class UserSession implements Serializable {
 
     @JsonIgnore
     public boolean isInCreationFlow() {
-        return state != null && state.name().startsWith("CREATING_");
+        return state != null && (state.name().startsWith("CREATING_") || state.name().startsWith("AWAITING_ASIGNAR_") || state.name().startsWith("AWAITING_ESTADO_"));
     }
 }
