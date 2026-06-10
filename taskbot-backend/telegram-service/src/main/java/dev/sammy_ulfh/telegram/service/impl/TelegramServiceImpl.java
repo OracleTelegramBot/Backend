@@ -438,7 +438,7 @@ public class TelegramServiceImpl implements TelegramService {
                     session.setTempValue("tarea_prioridad", String.valueOf(prioridad));
                     session.setState(UserSession.SessionState.CREATING_TAREA_COMPLEJIDAD);
                     sessionRepository.save(chatId, session);
-                    sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 8/8\n*Complejidad* (1-10) o '-' para omitir:", null);
+                    sendToTelegram(chatId, "✅ *Crear Tarea* — Paso 8/8\n*Complejidad* (1-9) o '-' para omitir:", null);
                 } catch (NumberFormatException e) {
                     sendToTelegram(chatId, "[-] Introduce 1, 2 o 3 según la prioridad:", null);
                 }
@@ -449,9 +449,9 @@ public class TelegramServiceImpl implements TelegramService {
                 if (!val.equals("-")) {
                     try {
                         complejidad = Integer.parseInt(val);
-                        if (complejidad < 1 || complejidad > 10) throw new NumberFormatException();
+                        if (complejidad < 1 || complejidad > 9) throw new NumberFormatException();
                     } catch (NumberFormatException e) {
-                        sendToTelegram(chatId, "[-] Introduce un número del 1 al 10 o '-' para omitir:", null);
+                        sendToTelegram(chatId, "[-] Introduce un número del 1 al 9 o '-' para omitir:", null);
                         return;
                     }
                 }
