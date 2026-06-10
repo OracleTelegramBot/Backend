@@ -56,6 +56,15 @@ public class TaskController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PatchMapping("/{taskId}/horas-reales")
+    public ResponseEntity<Void> setHorasReales(
+            @PathVariable Long taskId,
+            @RequestParam Integer horas) {
+        log.info("PATCH /api/tasks/{}/horas-reales?horas={}", taskId, horas);
+        taskService.setHorasReales(taskId, horas);
+        return ResponseEntity.ok().build();
+    }
+
     @PatchMapping("/{taskId}/assign")
     public ResponseEntity<Void> assignTask(
             @PathVariable Long taskId,

@@ -21,6 +21,7 @@ public interface TaskService {
 
     // Horas
     void logTime(Long taskId, TimeLogDTO dto);
+    void setHorasReales(Long taskId, Integer horas);
 
     // Sprints
     void createSprint(CreateSprintDTO dto);

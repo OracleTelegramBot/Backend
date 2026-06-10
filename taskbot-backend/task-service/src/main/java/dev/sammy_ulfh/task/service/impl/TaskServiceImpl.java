@@ -164,6 +164,17 @@ public class TaskServiceImpl implements TaskService {
         log.info("Tarea id={} tiempoReal actualizado a={}", taskId, tarea.getTiempoReal());
     }
 
+    @Override
+    @Transactional
+    public void setHorasReales(Long taskId, Integer horas) {
+        log.info("Estableciendo tiempoReal={} en tarea id={}", horas, taskId);
+        Tarea tarea = tareaRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Tarea no encontrada id=" + taskId));
+        tarea.setTiempoReal(horas);
+        tareaRepository.save(tarea);
+        log.info("Tarea id={} tiempoReal actualizado a={}", taskId, horas);
+    }
+
     // Sprints
 
     @Override
