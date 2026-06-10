@@ -131,7 +131,7 @@ public class TelegramServiceImpl implements TelegramService {
             session = null;
         }
 
-        if (session == null || session.getState() != UserSession.SessionState.LOGGED_IN) {
+        if (session == null || (session.getState() != UserSession.SessionState.LOGGED_IN && !session.isInCreationFlow())) {
             sendToTelegram(chatId, "⚠️ Sessión inválida. Usa `/start` para iniciar sesión y ganar permisos.", null);
             return;
         }
