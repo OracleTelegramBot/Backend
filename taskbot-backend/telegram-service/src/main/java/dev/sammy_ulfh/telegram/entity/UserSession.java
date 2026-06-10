@@ -1,9 +1,12 @@
 package dev.sammy_ulfh.telegram.entity;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserSession {
+public class UserSession implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public enum SessionState {
         AWAITING_EMAIL,
@@ -29,7 +32,7 @@ public class UserSession {
     private String email;
     private String jwtToken;
     private Long idRol;
-    private final Map<String, String> tempData = new HashMap<>();
+    private Map<String, String> tempData = new HashMap<>();
 
     public UserSession() {
         this.state = SessionState.AWAITING_EMAIL;
@@ -47,11 +50,14 @@ public class UserSession {
     public Long getIdRol() { return idRol; }
     public void setIdRol(Long idRol) { this.idRol = idRol; }
 
+    public Map<String, String> getTempData() { return tempData; }
+    public void setTempData(Map<String, String> tempData) { this.tempData = tempData; }
+
     public void setTempValue(String key, String value) { tempData.put(key, value); }
     public String getTempValue(String key) { return tempData.get(key); }
     public void clearTempData() { tempData.clear(); }
 
     public boolean isInCreationFlow() {
-        return state.name().startsWith("CREATING_");
+        return state != null && state.name().startsWith("CREATING_");
     }
 }
