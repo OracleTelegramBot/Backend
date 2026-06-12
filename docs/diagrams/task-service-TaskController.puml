@@ -1,0 +1,20 @@
+@startuml
+
+class dev.sammy_ulfh.task.controller.TaskController {
+	{field} {static} -log : org.slf4j.Logger
+	{field} -taskService : dev.sammy_ulfh.task.service.TaskService
+	{method} +assignTask ( paramLong1 : Long , paramLong2 : Long ) : org.springframework.http.ResponseEntity
+	{method} +createTask ( paramCreateTaskDTO1 : dev.sammy_ulfh.task.model.dto.CreateTaskDTO ) : org.springframework.http.ResponseEntity
+	{method} +getTasksBySprint ( paramLong1 : Long ) : org.springframework.http.ResponseEntity
+	{method} +getTasksByUser ( paramLong1 : Long ) : org.springframework.http.ResponseEntity
+	{method} +logTime ( paramLong1 : Long , paramTimeLogDTO2 : dev.sammy_ulfh.task.model.dto.TimeLogDTO ) : org.springframework.http.ResponseEntity
+	{method} +setHorasReales ( paramLong1 : Long , paramInteger2 : Integer ) : org.springframework.http.ResponseEntity
+	{method} +updateTaskStatus ( paramLong1 : Long , paramLong2 : Long ) : org.springframework.http.ResponseEntity
+}
+
+
+
+
+
+
+@enduml

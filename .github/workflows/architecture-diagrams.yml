@@ -1,0 +1,38 @@
+name: Generate Architecture Diagrams (C4 Level 4)
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'taskbot-backend/task-service/**/*.java'
+      - 'taskbot-backend/task-service/pom.xml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate-diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Generate PlantUML diagrams
+        run: |
+          cd taskbot-backend/task-service
+          mvn -B process-classes -DskipTests
+
+      - name: Commit generated diagrams
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: regenerate C4 Level 4 diagrams [skip ci]"
+          file_pattern: "docs/diagrams/*.puml"

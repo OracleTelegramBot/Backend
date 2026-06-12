@@ -1,0 +1,15 @@
+@startuml
+
+class dev.sammy_ulfh.task.controller.SprintController {
+	{field} {static} -log : org.slf4j.Logger
+	{field} -taskService : dev.sammy_ulfh.task.service.TaskService
+	{method} +createSprint ( paramCreateSprintDTO1 : dev.sammy_ulfh.task.model.dto.CreateSprintDTO ) : org.springframework.http.ResponseEntity
+	{method} +getSprintsByProject ( paramLong1 : Long ) : org.springframework.http.ResponseEntity
+}
+
+
+
+
+
+
+@enduml

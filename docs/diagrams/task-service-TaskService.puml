@@ -1,0 +1,44 @@
+@startuml
+
+interface dev.sammy_ulfh.task.service.TaskService {
+	{method}  {abstract} +assignTask ( paramLong1 : Long , paramLong2 : Long ) : void
+	{method}  {abstract} +createSprint ( paramCreateSprintDTO1 : dev.sammy_ulfh.task.model.dto.CreateSprintDTO ) : void
+	{method}  {abstract} +createTask ( paramCreateTaskDTO1 : dev.sammy_ulfh.task.model.dto.CreateTaskDTO ) : dev.sammy_ulfh.task.model.dto.TaskResponseDTO
+	{method}  {abstract} +getSprintsByProject ( paramLong1 : Long ) : java.util.List
+	{method}  {abstract} +getTasksBySprint ( paramLong1 : Long ) : java.util.List
+	{method}  {abstract} +getTasksByUser ( paramLong1 : Long ) : java.util.List
+	{method}  {abstract} +logTime ( paramLong1 : Long , paramTimeLogDTO2 : dev.sammy_ulfh.task.model.dto.TimeLogDTO ) : void
+	{method}  {abstract} +setHorasReales ( paramLong1 : Long , paramInteger2 : Integer ) : void
+	{method}  {abstract} +updateTaskStatus ( paramLong1 : Long , paramLong2 : Long ) : dev.sammy_ulfh.task.model.dto.TaskResponseDTO
+}
+
+
+class dev.sammy_ulfh.task.service.impl.TaskServiceImpl {
+	{field} {static} -ESTADO_COMPLETADA : Long
+	{field} -kpiServiceClient : dev.sammy_ulfh.task.client.KpiServiceClient
+	{field} {static} -log : org.slf4j.Logger
+	{field} -registroHorasRepository : dev.sammy_ulfh.task.repository.RegistroHorasRepository
+	{field} -sprintRepository : dev.sammy_ulfh.task.repository.SprintRepository
+	{field} -tareaRepository : dev.sammy_ulfh.task.repository.TareaRepository
+	{field} -usuarioTareaRepository : dev.sammy_ulfh.task.repository.UsuarioTareaRepository
+	{method} +assignTask ( paramLong1 : Long , paramLong2 : Long ) : void
+	{method} +createSprint ( paramCreateSprintDTO1 : dev.sammy_ulfh.task.model.dto.CreateSprintDTO ) : void
+	{method} +createTask ( paramCreateTaskDTO1 : dev.sammy_ulfh.task.model.dto.CreateTaskDTO ) : dev.sammy_ulfh.task.model.dto.TaskResponseDTO
+	{method} +getSprintsByProject ( paramLong1 : Long ) : java.util.List
+	{method} +getTasksBySprint ( paramLong1 : Long ) : java.util.List
+	{method} +getTasksByUser ( paramLong1 : Long ) : java.util.List
+	{method} +logTime ( paramLong1 : Long , paramTimeLogDTO2 : dev.sammy_ulfh.task.model.dto.TimeLogDTO ) : void
+	{method} +setHorasReales ( paramLong1 : Long , paramInteger2 : Integer ) : void
+	{method} -toResponseDTO ( paramTarea1 : dev.sammy_ulfh.task.model.entity.Tarea ) : dev.sammy_ulfh.task.model.dto.TaskResponseDTO
+	{method} -triggerKpiRecalculate ( paramLong1 : Long ) : void
+	{method} +updateTaskStatus ( paramLong1 : Long , paramLong2 : Long ) : dev.sammy_ulfh.task.model.dto.TaskResponseDTO
+	{method} -validarStatusId ( paramLong1 : Long ) : void
+}
+
+
+
+
+dev.sammy_ulfh.task.service.impl.TaskServiceImpl ..|>  dev.sammy_ulfh.task.service.TaskService
+
+
+@enduml

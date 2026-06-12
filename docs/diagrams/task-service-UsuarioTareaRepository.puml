@@ -1,0 +1,12 @@
+@startuml
+
+interface dev.sammy_ulfh.task.repository.UsuarioTareaRepository {
+	{method}  {abstract} +findByIdIdUsuario ( paramLong1 : Long ) : java.util.List
+}
+
+
+
+
+
+
+@enduml
